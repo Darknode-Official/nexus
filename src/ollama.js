@@ -103,8 +103,8 @@ function ollamaTags() {
 // coder models, then anything code-ish, then whatever's installed.
 function pickCoderModel(ms) {
   ms = ms || [];
-  const want = (process.env.SENTINEL_MODEL || "").trim().toLowerCase();
-  if (want) { const hit = ms.find((m) => m.toLowerCase() === want) || ms.find((m) => m.toLowerCase().startsWith(want)); if (hit) return hit; }
+  const rawWant = (process.env.SENTINEL_MODEL || "").trim();
+  if (rawWant) { const w = rawWant.toLowerCase(); const hit = ms.find((m) => m.toLowerCase() === w) || ms.find((m) => m.toLowerCase().startsWith(w)); return hit || rawWant; } // honor explicit choice even if not yet pulled (Ollama fetches on first use)
   const pri = ["gpt-oss:120b", "gpt-oss:20b", "gpt-oss", "qwen2.5-coder", "deepseek-coder", "codellama", "hermes3", "dolphin3", "llama3.1"];
   for (const p of pri) { const hit = ms.find((m) => m.toLowerCase().startsWith(p)); if (hit) return hit; }
   return ms.find((m) => /coder|code/i.test(m)) || ms[0] || "";
