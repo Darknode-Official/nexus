@@ -42,7 +42,38 @@ function openaiCompatChat(base, model, messages, format, signal) {
   });
 }
 
+// Native Anthropic (Claude) Messages API — "actual Claude" via an API key, in-process
+// (NO headless Claude Code CLI). Used whenever the model id starts with "claude" and a
+// key is present. Same prompt-driven tool loop as every other engine.
+const ANTHROPIC_KEY = () => (process.env.ANTHROPIC_API_KEY || process.env.SENTINEL_ANTHROPIC_KEY || "").trim();
+function hasAnthropic() { return !!ANTHROPIC_KEY(); }
+function anthropicChat(model, messages, format, signal) {
+  return new Promise((resolve, reject) => {
+    const https = require("https");
+    const sys = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n")
+      + (format ? "\n\nRespond with ONLY valid JSON matching the requested schema — no prose, no code fences." : "");
+    // map tool->user, merge consecutive same-role turns, and ensure it starts with user
+    const mapped = messages.filter((m) => m.role !== "system")
+      .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.role === "tool" ? "[tool result] " + m.content : String(m.content) }));
+    const msgs = [];
+    for (const m of mapped) { const last = msgs[msgs.length - 1]; if (last && last.role === m.role) last.content += "\n\n" + m.content; else msgs.push({ ...m }); }
+    if (!msgs.length || msgs[0].role !== "user") msgs.unshift({ role: "user", content: "(begin)" });
+    const body = JSON.stringify({ model, max_tokens: 4096, system: sys, messages: msgs });
+    const req = https.request({ hostname: "api.anthropic.com", path: "/v1/messages", method: "POST", signal,
+      headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body), "x-api-key": ANTHROPIC_KEY(), "anthropic-version": "2023-06-01" } },
+      (res) => { let d = ""; res.on("data", (c) => (d += c)); res.on("end", () => {
+        try { const j = JSON.parse(d); if (j.error) return reject(new Error("Claude API: " + (j.error.message || String(d).slice(0, 200))));
+          resolve((j.content && j.content.map((b) => b.text || "").join("")) || ""); }
+        catch (e) { reject(new Error("bad Claude response (" + res.statusCode + "): " + String(d).slice(0, 160))); }
+      }); });
+    req.setTimeout(+(process.env.OLLAMA_TIMEOUT || 300000), () => req.destroy(new Error("Claude API timed out (no response)")));
+    req.on("error", (e) => reject(new Error("cannot reach Claude API — " + e.message)));
+    req.write(body); req.end();
+  });
+}
+
 function ollamaChat(model, messages, format, signal) {
+  if (/^claude/i.test(String(model)) && hasAnthropic()) return anthropicChat(model, messages, format, signal);
   const base = API_BASE();
   if (base) return openaiCompatChat(base, model, messages, format, signal);
   return new Promise((resolve, reject) => {
@@ -76,4 +107,4 @@ function pickCoderModel(ms) {
 }
 // Is an external OpenAI-compatible model API configured (vs local Ollama)?
 function apiConfigured() { return !!API_BASE(); }
-module.exports = { ollamaChat, ollamaTags, pickCoderModel, apiConfigured, API_BASE, API_KEY };
+module.exports = { ollamaChat, ollamaTags, pickCoderModel, apiConfigured, API_BASE, API_KEY, hasAnthropic, ANTHROPIC_KEY };
