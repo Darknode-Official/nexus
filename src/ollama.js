@@ -73,9 +73,9 @@ function anthropicChat(model, messages, format, signal) {
 }
 
 function ollamaChat(model, messages, format, signal) {
-  if (/^claude/i.test(String(model)) && hasAnthropic()) return anthropicChat(model, messages, format, signal);
   const base = API_BASE();
-  if (base) return openaiCompatChat(base, model, messages, format, signal);
+  if (base) return openaiCompatChat(base, model, messages, format, signal);   // an explicitly configured API base always wins
+  if (/^claude/i.test(String(model)) && hasAnthropic()) return anthropicChat(model, messages, format, signal);  // else native Claude for claude-* models
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ model, stream: false, format, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 16384 }, messages });
     const req = http.request({ host: HOST(), port: PORT(), path: "/api/chat", method: "POST", signal, headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) } },
