@@ -1,0 +1,10 @@
+{
+  "name": "nexus",
+  "version": "1.0.0",
+  "description": "Nexus — a terminal AI coding agent engine (local + cloud), part of the Sentinel toolkit.",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "src/engines.js",
+  "author": "Darknode-Official",
+  "keywords": ["ai", "coding-agent", "ollama", "cli", "nexus", "sentinel"],
+  "repository": { "type": "git", "url": "https://github.com/Darknode-Official/nexus.git" }
+}
