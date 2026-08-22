@@ -5,7 +5,7 @@
 const DONE_TOKEN = "GOAL-DONE";
 
 function loopDecision(round, maxRounds, output) {
-  if (typeof output === "string" && output.toUpperCase().includes(DONE_TOKEN)) return { stop: true, reason: "goal complete" };
+  if (typeof output === "string" && output.trim().toUpperCase().endsWith(DONE_TOKEN)) return { stop: true, reason: "goal complete" };
   if (round >= maxRounds) return { stop: true, reason: "reached the " + maxRounds + "-round limit" };
   return { stop: false, reason: "continue" };
 }
