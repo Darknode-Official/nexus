@@ -155,3 +155,28 @@ sentinel nexus --engine gemini "review security"
 ## License
 
 See [LICENSE](LICENSE).
+
+### Workspace Intelligence (`src/workspace.js`)
+Auto-detects everything about your project: language, framework, package manager, test
+runner, linter, CI, Docker, monorepo structure, entry points, and coding conventions
+(indent style, semicolons, quotes, module system). Every other system adapts automatically.
+
+### Error Recovery (`src/error-recovery.js`)
+Intelligent retry with strategy escalation. Classifies errors (network, rate limit, auth,
+context overflow, missing dependency, syntax) and picks the right recovery: simple retry,
+exponential backoff, prompt simplification, model switch, task decomposition, or auto-install.
+
+### Codemod Engine (`src/codemod.js`)
+Safe, surgical code transformations with preview, dry-run, and rollback. Rename symbols
+across files, update import paths, apply regex transforms project-wide, extract functions
+to new files — all with automatic snapshots for undo.
+
+### Agent Telemetry (`src/telemetry.js`)
+Tracks every action: duration, tokens, cost, success rate, quality scores. Dashboard shows
+engine comparison, intent breakdown, hourly activity, and top errors. See which engines
+work best for which tasks and where time is wasted.
+
+### Plugin System (`src/plugins.js`)
+Drop `.js` files in `.nexus/plugins/` — they become part of the agent. Plugins can add
+tools, slash commands, lifecycle hooks (before/after/error), custom intents, and prompt
+templates. Hot-reloaded on change.
