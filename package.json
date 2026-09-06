@@ -1,10 +1,22 @@
 {
   "name": "nexus",
-  "version": "1.0.0",
-  "description": "Nexus — a terminal AI coding agent engine (local + cloud), part of the Sentinel toolkit.",
+  "version": "2.0.0",
+  "description": "The most complete open-source AI coding agent engine — multi-engine, multi-agent, adaptive learning, research-backed prompt optimization, full MCP integration.",
   "license": "SEE LICENSE IN LICENSE",
-  "main": "src/engines.js",
+  "main": "index.js",
   "author": "Darknode-Official",
-  "keywords": ["ai", "coding-agent", "ollama", "cli", "nexus", "sentinel"],
-  "repository": { "type": "git", "url": "https://github.com/Darknode-Official/nexus.git" }
+  "scripts": {
+    "test": "node --test test/run.js",
+    "test:verbose": "node --test --test-reporter=spec test/run.js",
+    "lint": "for f in src/*.js index.js; do node -c \"$f\" || exit 1; done && echo 'All files valid'",
+    "stats": "echo \"$(ls src/*.js | wc -l) modules, $(cat src/*.js | wc -l) lines\" && node --test test/run.js 2>&1 | grep '# pass'"
+  },
+  "keywords": [
+    "ai", "coding-agent", "ollama", "claude", "gemini", "codex", "mcp",
+    "multi-agent", "agentic", "nexus", "sentinel", "reasoning", "metacognition",
+    "knowledge-graph", "prompt-optimization", "self-evaluation", "verification"
+  ],
+  "engines": { "node": ">=18.0.0" },
+  "repository": { "type": "git", "url": "https://github.com/Darknode-Official/nexus.git" },
+  "files": ["index.js", "src/", "LICENSE", "README.md"]
 }
