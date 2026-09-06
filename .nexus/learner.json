@@ -1,0 +1,28 @@
+{
+  "patterns": [
+    {
+      "category": "approach",
+      "description": "Use structured CoT for debugging",
+      "context": "",
+      "confidence": 0.8,
+      "count": 1,
+      "learnedAt": 1788735904175,
+      "lastSeen": 1788735904175
+    },
+    {
+      "category": "style",
+      "description": "This project uses 2-space indent",
+      "context": "",
+      "confidence": 0.9,
+      "count": 1,
+      "learnedAt": 1788735904175,
+      "lastSeen": 1788735904175
+    }
+  ],
+  "corrections": [],
+  "preferences": {},
+  "toolStats": {},
+  "failureModes": [],
+  "styleGuide": {},
+  "version": 1
+}

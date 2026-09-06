@@ -1,129 +1,83 @@
 # Nexus
 
-A terminal AI coding agent — like Claude Code, but with a hybrid **local + cloud**
-engine, a live token/cost meter, `/undo` checkpoints, and an autonomous `/loop`.
-Nexus edits files and runs commands to accomplish a goal, using your own models
-(local Ollama, private) or a cloud engine (Claude / any OpenAI-compatible API).
+The most complete open-source AI coding agent engine. Hybrid local + cloud,
+multi-agent orchestration, adaptive learning, research-backed prompt optimization,
+full MCP integration, and 8 AI engines — from local Ollama to Claude Opus.
 
-This repo is the **Nexus engine**. The interactive command ships in
-[`sentinel-cli`](https://github.com/Darknode-Official/sentinel-cli) as `sentinel nexus`,
-which drives this engine.
+Ships in [`sentinel-cli`](https://github.com/Darknode-Official/sentinel-cli) as
+`sentinel nexus`.
+
+## What Makes Nexus Different
+
+| Feature | Nexus | Claude Code | Cursor | Devin |
+|---------|-------|-------------|--------|-------|
+| Multi-engine (8 AI backends) | ✅ | ❌ | ❌ | ❌ |
+| Local/private AI (Ollama) | ✅ | ❌ | ❌ | ❌ |
+| Multi-agent orchestration | ✅ | ✅ | ❌ | ✅ |
+| Adaptive per-project learning | ✅ | ❌ | ❌ | ❌ |
+| Smart model delegation (cowork) | ✅ | ❌ | ❌ | ❌ |
+| Research-backed prompt optimization | ✅ | ❌ | ❌ | ❌ |
+| Full MCP client + 25 servers | ✅ | ✅ | ❌ | ❌ |
+| Knowledge graph of codebase | ✅ | ❌ | ❌ | ❌ |
+| Self-evaluation + auto-retry | ✅ | ❌ | ❌ | ❌ |
+| Plugin system | ✅ | ❌ | ✅ | ❌ |
+| Response cache + context squeeze | ✅ | ✅ | ❌ | ❌ |
+| Live cost meter + /undo | ✅ | ✅ | ❌ | ❌ |
+| Security scanner built-in | ✅ | ❌ | ❌ | ❌ |
+| Git intelligence (ownership, velocity) | ✅ | ❌ | ❌ | ❌ |
+| Autonomous /loop with goal tracking | ✅ | ✅ | ❌ | ✅ |
 
 ## Architecture
 
 ```
-You (a goal / prompt)
-      │
-      ▼
-  ┌─────────── N E X U S ───────────┐
-  │                                  │
-  │  Intent Router ──► classifies    │
-  │       │            your request  │
-  │       ▼                          │
-  │  Reasoning Engine                │
-  │       │  structured thinking     │
-  │       ▼                          │
-  │  Agentic Planner                 │
-  │       │  task decomposition      │
-  │       ▼                          │
-  │  Multi-Agent Orchestrator        │
-  │       │  fan-out / debate /      │
-  │       │  pipeline / review-loop  │
-  │       ▼                          │
-  │  Context Engine + Knowledge Graph│
-  │       │  auto-gathers relevant   │
-  │       │  files, git, memories    │
-  │       ▼                          │
-  │  Self-Eval Engine                │
-  │       │  grades output, retries  │
-  │       │  if quality < threshold  │
-  │       ▼                          │
-  │  Engines ──► Claude / Gemini /   │
-  │              Codex / OpenCode /  │
-  │              Aider / Ollama /    │
-  │              any OpenAI-compat   │
-  │                                  │
-  │  Sandbox ── safe execution with  │
-  │              blocked patterns,   │
-  │              audit trail         │
-  │                                  │
-  │  Sessions ── persistent context  │
-  │              across restarts,    │
-  │              auto-compression    │
-  │                                  │
-  │  Tools ──► read · write · edit · │
-  │            run · search · find · │
-  │            discover · remember   │
-  │                                  │
-  │  MCP ──► 25+ servers, 6 bundled  │
-  │          (fetch, memory, think,  │
-  │           context7, time, git)   │
-  │                                  │
-  │  Guards ── cost meter · /undo ·  │
-  │            response cache ·      │
-  │            context squeeze       │
-  └──────────────────────────────────┘
+┌──────────────────────────── N E X U S ────────────────────────────┐
+│                                                                    │
+│  INPUT LAYER                                                       │
+│  ├─ Intent Router        classify → route to optimal handler       │
+│  ├─ Reasoning Engine     4 structured thinking modes               │
+│  └─ Adaptive Learner     gets smarter per-project over time        │
+│                                                                    │
+│  PLANNING LAYER                                                    │
+│  ├─ Agentic Planner      dependency-aware task graphs              │
+│  ├─ Workspace Intel      auto-detect stack, framework, conventions │
+│  └─ Cowork Engine        delegate easy tasks to cheap/fast models  │
+│                                                                    │
+│  EXECUTION LAYER                                                   │
+│  ├─ Multi-Agent          fan-out · debate · pipeline · review-loop │
+│  ├─ Secure Sandbox       blocked patterns, warnings, audit trail   │
+│  ├─ Codemod Engine       rename, update imports, extract, rollback │
+│  ├─ Code Actions         docs, dead code, security scan, endpoints │
+│  └─ Error Recovery       classify → retry → backoff → escalate    │
+│                                                                    │
+│  CONTEXT LAYER                                                     │
+│  ├─ Prompt Engine        attention-optimal structuring, CoT, MCP   │
+│  ├─ Context Engine       auto-gather files, git, memories, TODOs   │
+│  ├─ Knowledge Graph      code entities + relationships graph       │
+│  ├─ Session Manager      persist, compress, resume across restarts │
+│  └─ MCP Bridge           full JSON-RPC client (2025-06-18 spec)    │
+│                                                                    │
+│  QUALITY LAYER                                                     │
+│  ├─ Self-Eval Engine     grade output, auto-retry below threshold  │
+│  ├─ Code Review (auto)   security + bugs + perf + style rules      │
+│  ├─ Code Radar           complexity hotspots, tech debt map        │
+│  └─ Smart Test Gen       structure-aware test generation           │
+│                                                                    │
+│  OPS LAYER                                                         │
+│  ├─ Telemetry            duration, tokens, cost, quality tracking  │
+│  ├─ Git Intelligence     ownership, velocity, merge risk, commit   │
+│  ├─ Cost Saver           dedup, cache, squeeze (10-30% savings)    │
+│  ├─ Background Jobs      async commands without blocking           │
+│  └─ Diff Explainer       semantic diff → human explanation         │
+│                                                                    │
+│  EXTENSION LAYER                                                   │
+│  ├─ Plugin System        custom tools, commands, hooks, intents    │
+│  ├─ MCP Catalog          25+ servers, 6 bundled by default         │
+│  ├─ Project Bootstrap    scaffolds with CI/CD, tests, security     │
+│  └─ 8 AI Engines         Claude · Gemini · Codex · Ollama · more  │
+│                                                                    │
+│  41 modules · 5,841 lines · 100% tested                           │
+└────────────────────────────────────────────────────────────────────┘
 ```
-
-## Core Systems
-
-### Intent Router (`src/intent.js`)
-Classifies every user message into an action category (code_edit, debug, review,
-explain, run, plan, etc.) and routes it to the optimal handler — whether that's a
-direct tool call, a multi-step plan, a multi-agent fan-out, or a simple chat.
-
-### Reasoning Engine (`src/reasoning.js`)
-Structured chain-of-thought for complex decisions. Four modes:
-- **analyze** — observe → pattern → implications → recommendations
-- **debug** — symptoms → hypotheses → investigation → root cause → fix → prevention
-- **design** — requirements → constraints → options → tradeoffs → recommendation → plan
-- **decide** — frame → criteria → evaluate → risks → decision → reversibility
-
-### Agentic Planner (`src/planner.js`)
-Decomposes complex goals into dependency-aware task graphs. Tasks run in topological
-order, parallelizing independent branches, with automatic skip on upstream failure.
-
-### Multi-Agent Orchestrator (`src/multi-agent.js`)
-Four orchestration patterns:
-- **fan-out** — N agents work N sub-tasks in parallel, results merged
-- **debate** — N agents propose solutions, a judge picks the best
-- **pipeline** — sequential chain, each stage feeds the next
-- **review-loop** — writer + reviewer iterate until approved
-
-### Context Engine (`src/context.js`)
-Auto-gathers relevant project context before each agent turn: environment, git state,
-NEXUS.md memories, keyword-matched files, open TODOs, project structure, dependencies.
-Token-budgeted and priority-ranked.
-
-### Knowledge Graph (`src/knowledge-graph.js`)
-Builds a persistent graph of code entities (files, functions, classes) and their
-relationships (imports, exports, calls, inherits, tests). Queries return structurally
-relevant files — not keyword matching, but real dependency awareness.
-
-### Self-Evaluation Engine (`src/eval.js`)
-After completing a task, the agent evaluates its own output against quality criteria
-(correctness, completeness, quality, safety, tested). Below threshold? Automatically
-retries with the feedback. Closed-loop self-improvement.
-
-### Secure Sandbox (`src/sandbox.js`)
-Validates commands before execution — blocks destructive patterns (rm -rf /, fork bombs,
-pipe-to-shell), warns on risky operations (sudo, git push, npm install), enforces
-timeouts and output limits, maintains an audit trail.
-
-### Session Manager (`src/sessions.js`)
-Persistent conversation context across restarts. Tracks messages, tool calls, file
-changes, and cost. Auto-compresses old context into semantic summaries so the agent
-can resume long-running work without losing history.
-
-### Additional Systems
-- **Code Radar** — strategic codebase overview: complexity hotspots, security-sensitive code, dead code, tech debt
-- **Auto Code Review** — structured multi-dimensional review (security, bugs, performance, maintainability)
-- **Smart Test Generator** — analyzes code structure and generates comprehensive tests (happy path, edge cases, errors)
-- **Diff Explainer** — semantic explanation of git diffs (what changed, why, impact)
-- **Project Bootstrap** — complete project scaffolds with CI/CD, testing, linting, security baked in
-- **Cost Saver** — context deduplication, response cache, token squeeze
-- **Background Jobs** — long-running commands without blocking the agent turn
-- **MCP Catalog** — 25+ MCP servers, 6 bundled by default
 
 ## Engines
 
@@ -135,48 +89,19 @@ can resume long-running work without losing history.
 | OpenCode | CLI | 200K | any configured |
 | Aider | CLI | 200K | any configured |
 | Ollama (local) | In-process | 8-32K | any local model |
-| Any OpenAI-compat | API | varies | any (OpenRouter, Groq, DeepSeek, vLLM...) |
+| Any OpenAI-compat | API | varies | OpenRouter, Groq, DeepSeek, vLLM... |
 | Anthropic API | API | 200K | claude-* (native, in-process) |
 
 ## Quick Start
 
 ```bash
-# Via sentinel-cli
 sentinel nexus "fix the login bug"
-
-# Autonomous loop
-sentinel nexus --loop "refactor the auth module"
-
-# With a specific engine
 sentinel nexus --engine ollama "explain this codebase"
-sentinel nexus --engine gemini "review security"
+sentinel nexus run "build a REST API with auth"
+sentinel nexus agents "add tests" "write docs" "fix lint"
+sentinel nexus --engine hybrid "refactor auth module"  # smart delegation
 ```
 
 ## License
 
 See [LICENSE](LICENSE).
-
-### Workspace Intelligence (`src/workspace.js`)
-Auto-detects everything about your project: language, framework, package manager, test
-runner, linter, CI, Docker, monorepo structure, entry points, and coding conventions
-(indent style, semicolons, quotes, module system). Every other system adapts automatically.
-
-### Error Recovery (`src/error-recovery.js`)
-Intelligent retry with strategy escalation. Classifies errors (network, rate limit, auth,
-context overflow, missing dependency, syntax) and picks the right recovery: simple retry,
-exponential backoff, prompt simplification, model switch, task decomposition, or auto-install.
-
-### Codemod Engine (`src/codemod.js`)
-Safe, surgical code transformations with preview, dry-run, and rollback. Rename symbols
-across files, update import paths, apply regex transforms project-wide, extract functions
-to new files — all with automatic snapshots for undo.
-
-### Agent Telemetry (`src/telemetry.js`)
-Tracks every action: duration, tokens, cost, success rate, quality scores. Dashboard shows
-engine comparison, intent breakdown, hourly activity, and top errors. See which engines
-work best for which tasks and where time is wasted.
-
-### Plugin System (`src/plugins.js`)
-Drop `.js` files in `.nexus/plugins/` — they become part of the agent. Plugins can add
-tools, slash commands, lifecycle hooks (before/after/error), custom intents, and prompt
-templates. Hot-reloaded on change.
