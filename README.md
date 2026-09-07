@@ -75,7 +75,7 @@ Ships in [`sentinel-cli`](https://github.com/Darknode-Official/sentinel-cli) as
 │  ├─ Project Bootstrap    scaffolds with CI/CD, tests, security     │
 │  └─ 8 AI Engines         Claude · Gemini · Codex · Ollama · more  │
 │                                                                    │
-│  41 modules · 5,841 lines · 100% tested                           │
+│  52 modules · 9,627 lines · 115 tests · 100% tested                           │
 └────────────────────────────────────────────────────────────────────┘
 ```
 

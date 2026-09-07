@@ -440,3 +440,187 @@ describe("Skill Forge", () => {
 });
 
 console.log("\n✅ All tests defined. Run with: node --test test/run.js\n");
+
+// ---- Thought Stream ----
+describe("Thought Stream", () => {
+  const { createStream, addThought, branch, rewind, conclude, visualize } = require("../src/thought-stream");
+
+  it("creates a stream with a root thought", () => {
+    const s = createStream("Test goal");
+    assert.ok(s.id.startsWith("stream_"));
+    assert.equal(s.status, "thinking");
+    assert.equal(Object.keys(s.thoughts).length, 1);
+  });
+
+  it("adds thoughts and tracks the active head", () => {
+    const s = createStream("Debug auth");
+    const t = addThought(s, "Check the logs", "observe");
+    assert.equal(s.activeHead, t.id);
+    assert.equal(Object.keys(s.thoughts).length, 2);
+  });
+
+  it("rewinds to a previous thought", () => {
+    const s = createStream("Goal");
+    const t1 = addThought(s, "Step 1", "reason");
+    addThought(s, "Step 2 (wrong)", "reason");
+    rewind(s, t1.id);
+    assert.equal(s.activeHead, t1.id);
+  });
+
+  it("concludes with confidence", () => {
+    const s = createStream("Question");
+    conclude(s, "The answer is 42", 0.95);
+    assert.equal(s.status, "concluded");
+    assert.equal(s.conclusions.length, 1);
+    assert.equal(s.conclusions[0].confidence, 0.95);
+  });
+
+  it("visualizes the stream", () => {
+    const s = createStream("Test");
+    addThought(s, "Observe something", "observe");
+    conclude(s, "Done", 0.9);
+    const v = visualize(s);
+    assert.ok(v.includes("Test"));
+    assert.ok(v.includes("Done"));
+  });
+});
+
+// ---- Ghost Agents ----
+describe("Ghost Agents", () => {
+  const { scan, preCommitCheck, formatAlerts } = require("../src/ghost-agents");
+
+  it("scans files for issues", () => {
+    const result = scan(".", ["src/ollama.js"]);
+    assert.ok(typeof result.summary.totalAlerts === "number");
+    assert.ok(result.summary.filesScanned >= 1);
+  });
+
+  it("formats alerts as readable text", () => {
+    const result = scan(".", ["src/ollama.js"]);
+    const text = formatAlerts(result);
+    assert.ok(typeof text === "string");
+  });
+
+  it("runs pre-commit check", () => {
+    const result = preCommitCheck(".");
+    assert.ok(typeof result.safe === "boolean");
+    assert.ok(result.message);
+  });
+});
+
+// ---- Time Travel ----
+describe("Time Travel", () => {
+  const { createCheckpoint, listCheckpoints, visualizeTimeline } = require("../src/time-travel");
+
+  it("creates checkpoints with metadata", () => {
+    const cp = createCheckpoint(".", "Test checkpoint", ["src/intent.js"]);
+    assert.ok(cp.id.startsWith("cp_"));
+    assert.equal(cp.description, "Test checkpoint");
+    assert.equal(cp.files.length, 1);
+  });
+
+  it("visualizes empty timeline", () => {
+    const v = visualizeTimeline("/tmp/nonexistent");
+    assert.ok(v.includes("No checkpoints"));
+  });
+});
+
+// ---- Pipelines ----
+describe("Pipelines", () => {
+  const { ROLES, TEMPLATES, createPipelineRun, pipelineSummary } = require("../src/pipelines");
+
+  it("has all 8 roles", () => {
+    assert.ok(Object.keys(ROLES).length >= 8);
+    assert.ok(ROLES.architect);
+    assert.ok(ROLES.implementer);
+    assert.ok(ROLES.reviewer);
+    assert.ok(ROLES.tester);
+  });
+
+  it("has all pipeline templates", () => {
+    assert.ok(TEMPLATES["full-build"]);
+    assert.ok(TEMPLATES["quick-feature"]);
+    assert.ok(TEMPLATES["security-audit"]);
+    assert.ok(TEMPLATES["deep-review"]);
+  });
+
+  it("creates a pipeline run", () => {
+    const run = createPipelineRun("full-build", "Build an API");
+    assert.ok(run.id.startsWith("pipe_"));
+    assert.equal(run.stages.length, 6);
+    assert.equal(run.status, "pending");
+  });
+
+  it("generates a summary", () => {
+    const run = createPipelineRun("quick-feature", "Add auth");
+    const s = pipelineSummary(run);
+    assert.ok(s.includes("Quick Feature"));
+    assert.ok(s.includes("Add auth"));
+  });
+});
+
+// ---- NXP ----
+describe("NXP Protocol", () => {
+  const { createNXP, validateInput, NXPError } = require("../src/nxp");
+
+  it("creates a registry with builtins", () => {
+    const nxp = createNXP(".", { loadExtensions: false });
+    const tools = nxp.list();
+    assert.ok(tools.length >= 8);
+    assert.ok(tools.some(t => t.name === "read_file"));
+    assert.ok(tools.some(t => t.name === "search"));
+  });
+
+  it("validates input correctly", () => {
+    const valid = validateInput({ path: "x.js" }, { type: "object", properties: { path: { type: "string" } }, required: ["path"] });
+    assert.equal(valid.valid, true);
+    const invalid = validateInput({}, { type: "object", properties: { path: { type: "string" } }, required: ["path"] });
+    assert.equal(invalid.valid, false);
+  });
+
+  it("searches tools by keyword", () => {
+    const nxp = createNXP(".", { loadExtensions: false });
+    const results = nxp.search("file read");
+    assert.ok(results.length > 0);
+    assert.ok(results[0].name === "read_file");
+  });
+
+  it("formats tools for AI prompt", () => {
+    const nxp = createNXP(".", { loadExtensions: false });
+    const prompt = nxp.formatForPrompt();
+    assert.ok(prompt.includes("Available Tools"));
+    assert.ok(prompt.includes("read_file"));
+  });
+});
+
+// ---- 3D Modeler ----
+describe("3D Modeler", () => {
+  const { PROCEDURAL, createScene, addObject, exportScene, NXP_TOOLS } = require("../src/mcp-3d-modeler");
+
+  it("has procedural generators", () => {
+    assert.ok(Object.keys(PROCEDURAL).length >= 10);
+    assert.ok(PROCEDURAL.chair);
+    assert.ok(PROCEDURAL.building);
+    assert.ok(PROCEDURAL.terrain);
+  });
+
+  it("generates a chair with correct geometry", () => {
+    const mesh = PROCEDURAL.chair({});
+    const stats = mesh.stats();
+    assert.ok(stats.vertices > 30);
+    assert.ok(stats.faces > 20);
+  });
+
+  it("exports to OBJ", () => {
+    const scene = createScene("Test");
+    addObject(scene, PROCEDURAL.table({}));
+    const result = exportScene(scene, "/tmp/test-darknode.obj", "obj");
+    assert.ok(result.bytes > 0);
+    assert.equal(result.format, "obj");
+  });
+
+  it("has NXP tool definitions", () => {
+    assert.ok(NXP_TOOLS.length >= 5);
+    assert.ok(NXP_TOOLS.some(t => t.name === "generate_3d_object"));
+  });
+});
