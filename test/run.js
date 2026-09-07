@@ -3,7 +3,7 @@
 // Run: node --test test/run.js
 // Tests every module's public API: loads, exports, and functional behavior.
 
-const { describe, it } = require("node:test");
+const { describe, it, after } = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("path");
 const fs = require("fs");
@@ -622,5 +622,214 @@ describe("3D Modeler", () => {
   it("has NXP tool definitions", () => {
     assert.ok(NXP_TOOLS.length >= 5);
     assert.ok(NXP_TOOLS.some(t => t.name === "generate_3d_object"));
+  });
+});
+
+// ---- Darknode AI ----
+describe("Darknode AI", () => {
+  const { DarknodeAI, detectTemplate, SECURITY_TEMPLATES, multiPathPrompts, pickBestAnswer } = require("../src/darknode-ai");
+
+  it("detects security templates correctly", () => {
+    assert.equal(detectTemplate("how to exploit SQL injection"), "vulnerability");
+    assert.equal(detectTemplate("scan target for open ports"), "recon");
+    assert.equal(detectTemplate("write a reverse shell"), "exploit");
+    assert.equal(detectTemplate("how to defend against brute force"), "vulnerability");
+    assert.equal(detectTemplate("explain what SSRF is"), "vulnerability");
+  });
+
+  it("has all 5 security templates", () => {
+    assert.ok(SECURITY_TEMPLATES.vulnerability);
+    assert.ok(SECURITY_TEMPLATES.recon);
+    assert.ok(SECURITY_TEMPLATES.exploit);
+    assert.ok(SECURITY_TEMPLATES.defend);
+    assert.ok(SECURITY_TEMPLATES.explain);
+  });
+
+  it("generates multi-path prompts", () => {
+    const paths = multiPathPrompts("test XSS", 3);
+    assert.equal(paths.length, 3);
+    assert.ok(paths.every(p => p.prompt.includes("test XSS")));
+  });
+
+  it("picks the best answer by quality signals", () => {
+    const answers = [
+      { id: 0, text: "maybe try stuff" },
+      { id: 1, text: "1. Use nmap -sV\n2. Run sqlmap\n3. Check results\n`sudo nmap -A target`" },
+    ];
+    const best = pickBestAnswer(answers);
+    assert.equal(best.id, 1);
+  });
+
+  it("creates an instance with RAG loaded", () => {
+    const ai = new DarknodeAI();
+    const results = ai.rag.retrieve("nmap scan", 2);
+    assert.ok(results.length > 0);
+  });
+});
+
+// ---- Security RAG ----
+describe("Security RAG", () => {
+  const { SecurityRAG, BUILTIN_KNOWLEDGE } = require("../src/security-rag");
+
+  it("loads builtin knowledge", () => {
+    const rag = new SecurityRAG();
+    rag.loadBuiltins();
+    assert.ok(rag.stats().documents > 10);
+  });
+
+  it("retrieves relevant knowledge for SQL injection", () => {
+    const rag = new SecurityRAG();
+    rag.loadBuiltins();
+    const results = rag.retrieve("SQL injection", 3);
+    assert.ok(results.length > 0);
+    assert.ok(results[0].content.toLowerCase().includes("sql") || results[0].content.toLowerCase().includes("inject"));
+  });
+
+  it("augments a prompt with knowledge", () => {
+    const rag = new SecurityRAG();
+    rag.loadBuiltins();
+    const augmented = rag.augment("test for XSS");
+    assert.ok(augmented.length > "test for XSS".length);
+    assert.ok(augmented.includes("Reference") || augmented.includes("Knowledge"));
+  });
+
+  it("has OWASP, attacks, and tools in builtins", () => {
+    assert.ok(BUILTIN_KNOWLEDGE.owasp_top_10.length >= 10);
+    assert.ok(BUILTIN_KNOWLEDGE.attack_patterns.length >= 4);
+    assert.ok(BUILTIN_KNOWLEDGE.tools.length >= 4);
+  });
+});
+
+// ---- Learning Engine ----
+describe("Learning Engine", () => {
+  const le = require("../src/learning-engine");
+  const cwd = "/tmp/nexus-learn-test-" + Date.now();
+  const fs = require("fs");
+  fs.mkdirSync(cwd + "/.nexus/learning", { recursive: true });
+
+  it("saves and retrieves examples", () => {
+    le.saveExample(cwd, "scan ports", "nmap -sV TARGET", { rating: 1 });
+    const found = le.findSimilarExamples(cwd, "how to scan ports", 1);
+    assert.ok(found.length > 0);
+    assert.ok(found[0].score > 0);
+  });
+
+  it("records feedback and learns preferences", () => {
+    le.recordFeedback(cwd, "Use `nmap -sV`", 1);
+    le.recordFeedback(cwd, "Use `nmap -A`", 1);
+    le.recordFeedback(cwd, "Use nmap with scripts", 1);
+    const prefs = le.loadPreferences(cwd);
+    assert.ok(prefs.feedbackCount >= 3);
+  });
+
+  it("records errors and finds relevant ones", () => {
+    le.recordError(cwd, "reverse shell", "wrong syntax", "correct syntax");
+    const errors = le.findRelevantErrors(cwd, "reverse shell command", 1);
+    assert.ok(errors.length > 0);
+  });
+
+  it("augments prompts with learned data", () => {
+    const augmented = le.augmentWithLearning(cwd, "scan ports", "You are an expert.");
+    assert.ok(augmented.includes("You are an expert."));
+  });
+
+  after(() => { fs.rmSync(cwd, { recursive: true, force: true }); });
+});
+
+// ---- Attack Planner ----
+describe("Attack Planner", () => {
+  const { generatePlan, planToMarkdown, PHASES } = require("../src/attack-planner");
+
+  it("generates a plan with phases", () => {
+    const plan = generatePlan("10.10.14.7", { type: "full" });
+    assert.ok(plan.phases.length >= 4);
+    assert.ok(plan.disclaimer.includes("authorization"));
+  });
+
+  it("generates markdown output", () => {
+    const plan = generatePlan("example.com", { type: "web" });
+    const md = planToMarkdown(plan);
+    assert.ok(md.includes("example.com"));
+    assert.ok(md.includes("Penetration Test Plan"));
+  });
+});
+
+// ---- CTF Assistant ----
+describe("CTF Assistant", () => {
+  const { analyzeChallenge, detectCategory, CATEGORIES } = require("../src/ctf-assist");
+
+  it("detects web challenges", () => {
+    assert.equal(detectCategory("login page with SQL query"), "web");
+  });
+
+  it("detects crypto challenges", () => {
+    assert.equal(detectCategory("decrypt this RSA ciphertext"), "crypto");
+  });
+
+  it("analyzes a challenge with suggestions", () => {
+    const result = analyzeChallenge("Find the flag hidden in this PNG image");
+    assert.equal(result.category, "Forensics");
+    assert.ok(result.tools.length > 0);
+    assert.ok(result.suggestedApproach.length > 0);
+  });
+});
+
+// ---- Report Generator ----
+describe("Report Generator", () => {
+  const { generateReport, findingTemplate } = require("../src/report-gen");
+
+  it("generates a report from findings", () => {
+    const report = generateReport({
+      target: "10.10.14.7",
+      findings: [
+        findingTemplate({ title: "SQLi", severity: "critical" }),
+        findingTemplate({ title: "Missing HSTS", severity: "medium" }),
+      ],
+    });
+    assert.ok(report.markdown.includes("10.10.14.7"));
+    assert.equal(report.stats.total, 2);
+    assert.ok(["Critical", "High", "Medium"].includes(report.riskLevel));
+  });
+});
+
+// ---- Compliance ----
+describe("Compliance", () => {
+  const { checkHeaders, OWASP_TOP_10_2021 } = require("../src/compliance");
+
+  it("checks security headers", () => {
+    const result = checkHeaders({ "strict-transport-security": "max-age=31536000", "x-frame-options": "DENY" }, "https://example.com");
+    assert.ok(result.overallScore > 0);
+    assert.ok(["A", "B", "C", "D", "F"].includes(result.grade));
+  });
+
+  it("has all OWASP Top 10 categories", () => {
+    assert.equal(OWASP_TOP_10_2021.length, 10);
+  });
+});
+
+// ---- Threat Model ----
+describe("Threat Model", () => {
+  const { generateThreatModel, STRIDE } = require("../src/threat-model");
+
+  it("generates threats from components", () => {
+    const model = generateThreatModel({ name: "App", components: [{ name: "API", type: "api" }, { name: "DB", type: "database" }] });
+    assert.ok(model.totalThreats > 0);
+    assert.ok(model.threats.some(t => t.strideName));
+  });
+
+  it("has all 6 STRIDE categories", () => {
+    assert.equal(Object.keys(STRIDE).length, 6);
+  });
+});
+
+// ---- Vuln Scanner ----
+describe("Vuln Scanner", () => {
+  const { CHECKS } = require("../src/vuln-scanner");
+
+  it("has security header checks", () => {
+    assert.ok(CHECKS.length >= 10);
+    assert.ok(CHECKS.some(c => c.id === "hsts"));
+    assert.ok(CHECKS.some(c => c.id === "csp"));
+    assert.ok(CHECKS.some(c => c.id === "https"));
   });
 });

@@ -1,76 +1,86 @@
 "use strict";
-// ============================= Darknode Nexus Engine — Public API =============================
-// const { planner, intent, verify } = require("nexus");
+// ============================= Darknode Nexus Engine v2.2.0 — Public API =============================
 
-// ---- Core Agent Systems ----
-const intent        = require("./src/intent");
-const reasoning     = require("./src/reasoning");
-const planner       = require("./src/planner");
-const multiAgent    = require("./src/multi-agent");
-const pipelines     = require("./src/pipelines");
-const loop          = require("./src/loop");
+// Core Agent Systems
+const intent         = require("./src/intent");
+const reasoning      = require("./src/reasoning");
+const planner        = require("./src/planner");
+const multiAgent     = require("./src/multi-agent");
+const pipelines      = require("./src/pipelines");
+const loop           = require("./src/loop");
 
-// ---- Context & Memory ----
-const context       = require("./src/context");
+// Context & Memory
+const context        = require("./src/context");
 const knowledgeGraph = require("./src/knowledge-graph");
-const deepMemory    = require("./src/deep-memory");
-const sessions      = require("./src/sessions");
-const memory        = require("./src/memory");
-const thoughtStream = require("./src/thought-stream");
-const timeTravel    = require("./src/time-travel");
+const deepMemory     = require("./src/deep-memory");
+const sessions       = require("./src/sessions");
+const memory         = require("./src/memory");
+const thoughtStream  = require("./src/thought-stream");
+const timeTravel     = require("./src/time-travel");
 
-// ---- Intelligence ----
-const promptEngine  = require("./src/prompt-engine");
-const metacognition = require("./src/metacognition");
-const workspace     = require("./src/workspace");
-const skillForge    = require("./src/skill-forge");
-const worldModel    = require("./src/world-model");
-const learner       = require("./src/learner");
-const cowork        = require("./src/cowork");
+// Intelligence
+const promptEngine   = require("./src/prompt-engine");
+const metacognition  = require("./src/metacognition");
+const workspace      = require("./src/workspace");
+const skillForge     = require("./src/skill-forge");
+const worldModel     = require("./src/world-model");
+const learner        = require("./src/learner");
+const cowork         = require("./src/cowork");
+const darknodeAI     = require("./src/darknode-ai");
+const securityRAG    = require("./src/security-rag");
+const learningEngine = require("./src/learning-engine");
 
-// ---- Execution ----
-const sandbox       = require("./src/sandbox");
-const codemod       = require("./src/codemod");
-const codeActions   = require("./src/code-actions");
-const verification  = require("./src/verification");
-const nxp           = require("./src/nxp");
+// Execution
+const sandbox        = require("./src/sandbox");
+const codemod        = require("./src/codemod");
+const codeActions    = require("./src/code-actions");
+const verification   = require("./src/verification");
+const nxp            = require("./src/nxp");
 
-// ---- Quality ----
-const evaluate      = require("./src/eval");
-const review        = require("./src/review");
-const codeReview    = require("./src/code-review-auto");
-const codeRadar     = require("./src/code-radar");
-const smartTest     = require("./src/smart-test");
-const diffExplain   = require("./src/code-diff-explain");
-const ghostAgents   = require("./src/ghost-agents");
+// Quality
+const evaluate       = require("./src/eval");
+const review         = require("./src/review");
+const codeReview     = require("./src/code-review-auto");
+const codeRadar      = require("./src/code-radar");
+const smartTest      = require("./src/smart-test");
+const diffExplain    = require("./src/code-diff-explain");
+const ghostAgents    = require("./src/ghost-agents");
 
-// ---- Infrastructure ----
-const engines       = require("./src/engines");
-const ollama        = require("./src/ollama");
-const mcpBridge     = require("./src/mcp-bridge");
-const mcpCatalog    = require("./src/mcp-catalog");
-const modeler3d     = require("./src/mcp-3d-modeler");
-const errorRecovery = require("./src/error-recovery");
+// Security
+const attackPlanner  = require("./src/attack-planner");
+const ctfAssist      = require("./src/ctf-assist");
+const reportGen      = require("./src/report-gen");
+const compliance     = require("./src/compliance");
+const threatModel    = require("./src/threat-model");
+const vulnScanner    = require("./src/vuln-scanner");
 
-// ---- Ops ----
-const telemetry     = require("./src/telemetry");
-const plugins       = require("./src/plugins");
-const bgjobs        = require("./src/bgjobs");
-const pricing       = require("./src/pricing");
-const costsave      = require("./src/costsave");
-const gitIntel      = require("./src/git-intelligence");
+// Infrastructure
+const engines        = require("./src/engines");
+const ollama         = require("./src/ollama");
+const mcpBridge      = require("./src/mcp-bridge");
+const mcpCatalog     = require("./src/mcp-catalog");
+const modeler3d      = require("./src/mcp-3d-modeler");
+const errorRecovery  = require("./src/error-recovery");
 
-// ---- Utilities ----
-const codestats     = require("./src/codestats");
-const deps          = require("./src/deps");
-const envaudit      = require("./src/envaudit");
-const todos         = require("./src/todos");
-const tools         = require("./src/tools");
-const changelog     = require("./src/changelog");
-const parsers       = require("./src/parsers");
-const bootstrap     = require("./src/project-bootstrap");
+// Ops
+const telemetry      = require("./src/telemetry");
+const plugins        = require("./src/plugins");
+const bgjobs         = require("./src/bgjobs");
+const pricing        = require("./src/pricing");
+const costsave       = require("./src/costsave");
+const gitIntel       = require("./src/git-intelligence");
 
-const { version }   = require("./package.json");
+// Utilities
+const codestats      = require("./src/codestats");
+const deps           = require("./src/deps");
+const envaudit       = require("./src/envaudit");
+const todos          = require("./src/todos");
+const tools          = require("./src/tools");
+const changelog      = require("./src/changelog");
+const parsers        = require("./src/parsers");
+const bootstrap      = require("./src/project-bootstrap");
+
+const { version }    = require("./package.json");
 
 module.exports = {
   version,
@@ -80,10 +90,13 @@ module.exports = {
   context, knowledgeGraph, deepMemory, sessions, memory, thoughtStream, timeTravel,
   // Intelligence
   promptEngine, metacognition, workspace, skillForge, worldModel, learner, cowork,
+  darknodeAI, securityRAG, learningEngine,
   // Execution
   sandbox, codemod, codeActions, verification, nxp,
   // Quality
   evaluate, review, codeReview, codeRadar, smartTest, diffExplain, ghostAgents,
+  // Security
+  attackPlanner, ctfAssist, reportGen, compliance, threatModel, vulnScanner,
   // Infrastructure
   engines, ollama, mcpBridge, mcpCatalog, modeler3d, errorRecovery,
   // Ops
