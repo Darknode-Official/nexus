@@ -393,6 +393,141 @@ const PROCEDURAL = {
     m.merge(genCylinder(p.poleR * 3, p.poleR * 4, 0.05, 12), [0, 0.025, 0]); // base
     return m;
   },
+
+  bookshelf(params) {
+    const p = { w: 1, h: 2, d: 0.3, shelves: 4, thickness: 0.03, ...params };
+    const m = new MeshBuilder("Bookshelf");
+    m.merge(genCube(p.thickness, p.h, p.d), [-p.w/2 + p.thickness/2, p.h/2, 0]);
+    m.merge(genCube(p.thickness, p.h, p.d), [p.w/2 - p.thickness/2, p.h/2, 0]);
+    m.merge(genCube(p.w, p.thickness, p.d), [0, p.h - p.thickness/2, 0]);
+    m.merge(genCube(p.w, p.thickness, p.d), [0, p.thickness/2, 0]);
+    const gap = (p.h - p.thickness * 2) / p.shelves;
+    for (let i = 1; i < p.shelves; i++) m.merge(genCube(p.w - p.thickness * 2, p.thickness, p.d), [0, p.thickness + gap * i, 0]);
+    m.merge(genCube(p.w, p.h, p.thickness * 0.5), [0, p.h/2, -p.d/2 + p.thickness * 0.25]);
+    return m;
+  },
+
+  barrel(params) {
+    const p = { r: 0.35, h: 1, segments: 16, bulge: 1.15, ...params };
+    const m = new MeshBuilder("Barrel");
+    const rings = 8;
+    for (let ri = 0; ri <= rings; ri++) {
+      const t = ri / rings, y = t * p.h - p.h/2;
+      const bulgeF = 1 + (p.bulge - 1) * Math.sin(t * PI);
+      const rr = p.r * bulgeF;
+      for (let si = 0; si <= p.segments; si++) {
+        const a = TAU * si / p.segments;
+        m.vertices.push([Math.cos(a) * rr, y, Math.sin(a) * rr]);
+      }
+    }
+    for (let ri = 0; ri < rings; ri++) for (let si = 0; si < p.segments; si++) {
+      const a = ri * (p.segments + 1) + si; m.addQuad(a, a + p.segments + 1, a + p.segments + 2, a + 1);
+    }
+    m.merge(genCylinder(p.r * 0.95, p.r * 0.95, 0.02, p.segments), [0, p.h/2 - 0.01, 0]);
+    m.merge(genCylinder(p.r * 0.95, p.r * 0.95, 0.02, p.segments), [0, -p.h/2 + 0.01, 0]);
+    return m;
+  },
+
+  crate(params) {
+    const p = { w: 0.6, h: 0.6, d: 0.6, plankW: 0.08, gap: 0.02, ...params };
+    const m = new MeshBuilder("Crate");
+    m.merge(genCube(p.w, p.h, p.d), [0, p.h/2, 0]);
+    const n = Math.floor(p.w / (p.plankW + p.gap));
+    for (let i = 0; i < n; i++) {
+      const x = -p.w/2 + p.plankW/2 + i * (p.plankW + p.gap);
+      m.merge(genCube(p.plankW * 0.8, p.h + 0.01, 0.01), [x, p.h/2, p.d/2 + 0.005]);
+      m.merge(genCube(p.plankW * 0.8, p.h + 0.01, 0.01), [x, p.h/2, -p.d/2 - 0.005]);
+    }
+    return m;
+  },
+
+  bench(params) {
+    const p = { seatW: 1.5, seatD: 0.4, seatH: 0.04, legH: 0.45, legW: 0.06, armH: 0.25, ...params };
+    const m = new MeshBuilder("Bench");
+    m.merge(genCube(p.seatW, p.seatH, p.seatD), [0, p.legH + p.seatH/2, 0]);
+    const lx = p.seatW/2 - p.legW * 1.5, lz = p.seatD/2 - p.legW;
+    for (const [x, z] of [[-lx, -lz], [-lx, lz], [lx, -lz], [lx, lz]])
+      m.merge(genCube(p.legW, p.legH, p.legW), [x, p.legH/2, z]);
+    const backY = p.legH + p.seatH;
+    m.merge(genCube(p.seatW, p.seatH, p.legW), [0, backY + p.armH * 0.4, -lz]);
+    m.merge(genCube(p.seatW, p.seatH, p.legW), [0, backY + p.armH * 0.8, -lz]);
+    m.merge(genCube(p.legW, p.armH, p.legW), [-lx, backY + p.armH/2, -lz]);
+    m.merge(genCube(p.legW, p.armH, p.legW), [lx, backY + p.armH/2, -lz]);
+    m.merge(genCube(p.legW, p.seatH, p.seatD), [-lx, backY + p.seatH/2, 0]);
+    m.merge(genCube(p.legW, p.seatH, p.seatD), [lx, backY + p.seatH/2, 0]);
+    return m;
+  },
+
+  bridge(params) {
+    const p = { span: 8, w: 3, deckH: 0.2, railH: 1, archR: 2, ...params };
+    const m = new MeshBuilder("Bridge");
+    m.merge(genCube(p.span, p.deckH, p.w), [0, 0, 0]);
+    const posts = Math.floor(p.span / 1.5);
+    for (let i = 0; i <= posts; i++) {
+      const x = -p.span/2 + (p.span / posts) * i;
+      m.merge(genCube(0.08, p.railH, 0.08), [x, p.railH/2, -p.w/2 + 0.04]);
+      m.merge(genCube(0.08, p.railH, 0.08), [x, p.railH/2, p.w/2 - 0.04]);
+    }
+    m.merge(genCube(p.span, 0.06, 0.06), [0, p.railH, -p.w/2 + 0.04]);
+    m.merge(genCube(p.span, 0.06, 0.06), [0, p.railH, p.w/2 - 0.04]);
+    m.merge(genArch(p.archR, 0.4, 0, 12), [0, -p.deckH, 0]);
+    return m;
+  },
+
+  tower(params) {
+    const p = { floors: 5, baseR: 2, topR: 1.5, floorH: 3, segments: 12, ...params };
+    const m = new MeshBuilder("Tower");
+    const totalH = p.floors * p.floorH;
+    m.merge(genCylinder(p.topR, p.baseR, totalH, p.segments), [0, totalH/2, 0]);
+    for (let i = 0; i <= p.floors; i++) {
+      const t = i / p.floors, y = t * totalH, r = p.baseR + (p.topR - p.baseR) * t;
+      m.merge(genCylinder(r + 0.15, r + 0.15, 0.15, p.segments), [0, y, 0]);
+    }
+    m.merge(genCone(p.topR * 0.9, p.floorH * 0.8, p.segments), [0, totalH + p.floorH * 0.4, 0]);
+    return m;
+  },
+
+  house(params) {
+    const p = { w: 8, d: 6, wallH: 3, roofH: 2, roofOverhang: 0.5, ...params };
+    const m = new MeshBuilder("House");
+    m.merge(genCube(p.w, p.wallH, p.d), [0, p.wallH/2, 0]);
+    const roof = new MeshBuilder("Roof");
+    const hw = p.w/2 + p.roofOverhang, hd = p.d/2 + p.roofOverhang;
+    roof.addVertices([[-hw, 0, -hd], [hw, 0, -hd], [hw, 0, hd], [-hw, 0, hd], [0, p.roofH, -hd], [0, p.roofH, hd]]);
+    roof.addTri(0, 4, 1).addTri(2, 5, 3).addQuad(0, 3, 5, 4).addQuad(1, 4, 5, 2).addQuad(0, 1, 2, 3);
+    m.merge(roof, [0, p.wallH, 0]);
+    m.merge(genCube(1.2, 2.2, 0.15), [0, 1.1, -p.d/2 - 0.07]);
+    m.merge(genStairs(2, 1.8, 0.3, 0.5), [0, 0, -p.d/2 - 0.5]);
+    const nWin = Math.floor((p.w - 3) / 2);
+    for (let i = 0; i < nWin; i++) {
+      const wx = -p.w/2 + 1.5 + i * 2;
+      m.merge(genCube(0.9, 1.2, 0.1), [wx, p.wallH * 0.55, -p.d/2 - 0.05]);
+      m.merge(genCube(0.9, 1.2, 0.1), [wx, p.wallH * 0.55, p.d/2 + 0.05]);
+    }
+    return m;
+  },
+
+  boat(params) {
+    const p = { length: 4, w: 1.5, h: 0.6, mastH: 3, ...params };
+    const m = new MeshBuilder("Boat");
+    const hull = new MeshBuilder("Hull");
+    const seg = 12;
+    for (let i = 0; i <= seg; i++) {
+      const t = i / seg, x = (t - 0.5) * p.length;
+      const wf = Math.sin(t * PI) * p.w / 2;
+      hull.vertices.push([x, 0, -wf], [x, 0, wf], [x, -p.h * Math.sin(t * PI) * 0.5, 0]);
+    }
+    for (let i = 0; i < seg; i++) {
+      const b = i * 3;
+      hull.addTri(b, b + 3, b + 5).addTri(b, b + 5, b + 2);
+      hull.addTri(b + 1, b + 2, b + 5).addTri(b + 1, b + 5, b + 4);
+    }
+    m.merge(hull);
+    m.merge(genCylinder(0.03, 0.04, p.mastH, 8), [0, p.mastH/2, 0]);
+    const sailH = p.mastH * 0.6;
+    m.merge(genPlane(p.length * 0.4, sailH, 1, 4), [p.length * 0.05, p.mastH * 0.55, 0.01]);
+    return m;
+  },
 };
 
 // ================= MATERIALS LIBRARY =================
@@ -486,16 +621,36 @@ function exportOBJ(scene) {
 }
 
 function exportGLTF(scene) {
-  return JSON.stringify({
-    asset: { version: "2.0", generator: "Nexus 3D Modeler v2.0" },
-    scenes: [{ name: scene.name, nodes: scene.objects.map((_, i) => i) }],
-    nodes: scene.objects.map(obj => ({ name: obj.name, translation: obj.position, scale: obj.scale })),
+  const allNodes = [
+    ...scene.objects.map(obj => ({ name: obj.name, translation: obj.position, scale: obj.scale })),
+    ...scene.lights.map(l => ({ name: l.name, translation: l.position, extensions: { KHR_lights_punctual: { light: scene.lights.indexOf(l) } } })),
+    ...scene.cameras.map(c => ({ name: c.name, translation: c.position, camera: scene.cameras.indexOf(c) })),
+  ];
+  const gltf = {
+    asset: { version: "2.0", generator: "Nexus 3D Modeler v3.0" },
+    scenes: [{ name: scene.name, nodes: allNodes.map((_, i) => i) }],
+    nodes: allNodes,
     meshes: [],
     materials: scene.materials.map(mat => ({
       name: mat.name,
       pbrMetallicRoughness: { baseColorFactor: mat.baseColor, metallicFactor: mat.metallic, roughnessFactor: mat.roughness },
+      ...(mat.emissive ? { emissiveFactor: mat.emissive } : {}),
     })),
-  }, null, 2);
+  };
+  if (scene.lights.length) {
+    gltf.extensions = { KHR_lights_punctual: { lights: scene.lights.map(l => ({
+      name: l.name, type: l.type === "directional" ? "directional" : l.type === "spot" ? "spot" : "point",
+      color: l.color, intensity: l.intensity, ...(l.range ? { range: l.range } : {}),
+      ...(l.type === "spot" ? { spot: { innerConeAngle: (l.innerAngle || 25) * PI / 180, outerConeAngle: (l.outerAngle || 45) * PI / 180 } } : {}),
+    })) } };
+    gltf.extensionsUsed = ["KHR_lights_punctual"];
+  }
+  if (scene.cameras.length) {
+    gltf.cameras = scene.cameras.map(c => c.type === "orthographic"
+      ? { type: "orthographic", orthographic: { xmag: c.orthoScale, ymag: c.orthoScale, znear: c.near, zfar: c.far } }
+      : { type: "perspective", perspective: { yfov: (c.fov || 50) * PI / 180, znear: c.near, zfar: c.far } });
+  }
+  return JSON.stringify(gltf, null, 2);
 }
 
 function exportSTL(scene) {
@@ -526,6 +681,77 @@ function exportScene(scene, filePath, format) {
   return { path: filePath, format, bytes: content.length, objects: scene.objects.length };
 }
 
+// ================= LIGHTING SYSTEM =================
+
+const LIGHT_TYPES = {
+  point: { type: "point", intensity: 1, color: [1, 1, 1], range: 10 },
+  directional: { type: "directional", intensity: 1, color: [1, 1, 1], direction: [0, -1, -0.5] },
+  spot: { type: "spot", intensity: 2, color: [1, 1, 1], range: 15, innerAngle: 25, outerAngle: 45 },
+  ambient: { type: "ambient", intensity: 0.3, color: [1, 1, 1] },
+};
+
+const LIGHTING_PRESETS = {
+  studio: [
+    { ...LIGHT_TYPES.point, position: [3, 5, 3], intensity: 1.2, name: "Key" },
+    { ...LIGHT_TYPES.point, position: [-3, 3, 2], intensity: 0.6, color: [0.8, 0.85, 1], name: "Fill" },
+    { ...LIGHT_TYPES.point, position: [0, 4, -3], intensity: 0.4, name: "Rim" },
+    { ...LIGHT_TYPES.ambient, intensity: 0.15, name: "Ambient" },
+  ],
+  outdoor: [
+    { ...LIGHT_TYPES.directional, direction: [-0.5, -1, -0.3], intensity: 1.5, color: [1, 0.98, 0.9], name: "Sun" },
+    { ...LIGHT_TYPES.ambient, intensity: 0.4, color: [0.7, 0.8, 1], name: "Sky" },
+  ],
+  sunset: [
+    { ...LIGHT_TYPES.directional, direction: [-1, -0.3, 0], intensity: 1.2, color: [1, 0.6, 0.3], name: "Sun" },
+    { ...LIGHT_TYPES.ambient, intensity: 0.2, color: [0.4, 0.3, 0.5], name: "Sky" },
+    { ...LIGHT_TYPES.point, position: [0, 0.5, 0], intensity: 0.1, color: [1, 0.7, 0.4], name: "Bounce" },
+  ],
+  dramatic: [
+    { ...LIGHT_TYPES.spot, position: [0, 8, 0], intensity: 3, color: [1, 0.95, 0.85], innerAngle: 15, outerAngle: 30, name: "Spotlight" },
+    { ...LIGHT_TYPES.ambient, intensity: 0.05, name: "Ambient" },
+  ],
+  night: [
+    { ...LIGHT_TYPES.ambient, intensity: 0.02, color: [0.15, 0.15, 0.3], name: "Moonlight" },
+    { ...LIGHT_TYPES.directional, direction: [0.2, -1, 0.3], intensity: 0.15, color: [0.6, 0.7, 1], name: "Moon" },
+  ],
+};
+
+function addLight(scene, opts) {
+  const light = {
+    id: "light_" + crypto.randomBytes(4).toString("hex"),
+    name: opts.name || opts.type || "Light",
+    type: opts.type || "point",
+    position: opts.position || [0, 5, 0],
+    direction: opts.direction || [0, -1, 0],
+    color: opts.color || [1, 1, 1],
+    intensity: opts.intensity ?? 1,
+    range: opts.range || 10,
+    innerAngle: opts.innerAngle,
+    outerAngle: opts.outerAngle,
+    castShadow: opts.castShadow !== false,
+    shadowBias: opts.shadowBias || 0.001,
+  };
+  scene.lights.push(light);
+  return light;
+}
+
+function addCamera(scene, opts) {
+  opts = opts || {};
+  const cam = {
+    id: "cam_" + crypto.randomBytes(4).toString("hex"),
+    name: opts.name || "Camera",
+    type: opts.type || "perspective",
+    position: opts.position || [0, 3, 8],
+    target: opts.target || [0, 0, 0],
+    fov: opts.fov || 50,
+    near: opts.near || 0.1,
+    far: opts.far || 1000,
+    orthoScale: opts.orthoScale || 5,
+  };
+  scene.cameras.push(cam);
+  return cam;
+}
+
 // ================= NXP TOOL DEFINITIONS =================
 // These tools are registered with Nexus's NXP system for AI agents to use.
 
@@ -543,12 +769,12 @@ const NXP_TOOLS = [
   },
   {
     name: "generate_3d_object",
-    description: "Generate a 3D object and add it to a scene. HIGH-LEVEL types (recommended): chair, table, building, tree, car, sword, terrain, wall, column, fence, lamp. PRIMITIVES: cube, sphere, cylinder, plane, torus, cone, wedge, stairs, arch. Use high-level types whenever possible — they produce realistic multi-part models automatically.",
+    description: "Generate a 3D object and add it to a scene. HIGH-LEVEL types (recommended): chair, table, building, tree, car, sword, terrain, wall, column, fence, lamp, bookshelf, barrel, crate, bench, bridge, tower, house, boat. PRIMITIVES: cube, sphere, cylinder, plane, torus, cone, wedge, stairs, arch. Use high-level types whenever possible — they produce realistic multi-part models automatically.",
     input: {
       type: "object",
       properties: {
         sceneId: { type: "string" },
-        type: { type: "string", description: "Object type — use high-level types (chair, table, building, tree, car, sword, terrain, wall, column, fence, lamp) for realistic results, or primitives (cube, sphere, cylinder, plane, torus, cone, wedge, stairs, arch) for custom shapes" },
+        type: { type: "string", description: "Object type — use high-level types (chair, table, building, tree, car, sword, terrain, wall, column, fence, lamp, bookshelf, barrel, crate, bench, bridge, tower, house, boat) for realistic results, or primitives (cube, sphere, cylinder, plane, torus, cone, wedge, stairs, arch) for custom shapes" },
         name: { type: "string", description: "Object name" },
         layer: { type: "integer", description: "Layer 1-100 (1-10: foundation, 11-20: structure, 31-40: detail, etc.)" },
         position: { type: "array", description: "[x, y, z] position in the scene" },
@@ -651,7 +877,167 @@ const NXP_TOOLS = [
         materialCount: scene.materials.length,
         availableTypes: [...Object.keys(PROCEDURAL), "cube", "sphere", "cylinder", "plane", "torus", "cone", "wedge", "stairs", "arch"],
         availableMaterials: Object.keys(MATERIAL_PRESETS),
+        availableLightingPresets: Object.keys(LIGHTING_PRESETS),
       };
+    },
+  },
+  {
+    name: "add_3d_light",
+    description: "Add a light to a 3D scene. Types: point, directional, spot, ambient. Or use a PRESET for instant pro lighting: studio (3-point), outdoor (sun+sky), sunset, dramatic (spotlight), night (moonlight).",
+    input: {
+      type: "object",
+      properties: {
+        sceneId: { type: "string" },
+        preset: { type: "string", description: "Lighting preset (studio, outdoor, sunset, dramatic, night) — adds multiple lights at once" },
+        type: { type: "string", description: "Light type: point, directional, spot, ambient" },
+        position: { type: "array", description: "[x, y, z] position" },
+        color: { type: "array", description: "[r, g, b] color 0-1" },
+        intensity: { type: "number", description: "Light intensity (default 1)" },
+        castShadow: { type: "boolean", description: "Whether this light casts shadows (default true)" },
+        name: { type: "string" },
+      },
+      required: ["sceneId"],
+    },
+    tags: ["3d", "light", "scene"],
+    source: "builtin",
+    run: async (input) => {
+      const scene = scenes.get(input.sceneId);
+      if (!scene) return { error: "Scene not found" };
+      if (input.preset) {
+        const preset = LIGHTING_PRESETS[input.preset];
+        if (!preset) return { error: "Unknown preset: " + input.preset + ". Available: " + Object.keys(LIGHTING_PRESETS).join(", ") };
+        const added = [];
+        for (const lp of preset) { const l = addLight(scene, lp); added.push({ id: l.id, name: l.name, type: l.type }); }
+        return { preset: input.preset, lightsAdded: added.length, lights: added };
+      }
+      const light = addLight(scene, input);
+      return { lightId: light.id, name: light.name, type: light.type, intensity: light.intensity };
+    },
+  },
+  {
+    name: "add_3d_camera",
+    description: "Add a camera to a 3D scene. Position the camera and point it at a target. Types: perspective (realistic depth), orthographic (flat/isometric).",
+    input: {
+      type: "object",
+      properties: {
+        sceneId: { type: "string" },
+        position: { type: "array", description: "[x, y, z] camera position" },
+        target: { type: "array", description: "[x, y, z] what the camera looks at" },
+        fov: { type: "number", description: "Field of view in degrees (default 50)" },
+        type: { type: "string", description: "perspective or orthographic" },
+        name: { type: "string" },
+      },
+      required: ["sceneId"],
+    },
+    tags: ["3d", "camera", "scene"],
+    source: "builtin",
+    run: async (input) => {
+      const scene = scenes.get(input.sceneId);
+      if (!scene) return { error: "Scene not found" };
+      const cam = addCamera(scene, input);
+      return { cameraId: cam.id, name: cam.name, type: cam.type, position: cam.position, target: cam.target, fov: cam.fov };
+    },
+  },
+  {
+    name: "create_3d_mesh",
+    description: "Create a COMPLETELY CUSTOM 3D mesh from raw vertices and faces. Use this when presets aren't enough — the AI defines every vertex and face for a truly unique model. Vertices are [x,y,z] arrays. Faces are arrays of vertex indices (0-based). You can build ANY shape: organic curves, complex architecture, abstract art, custom furniture, game props, sculptures.",
+    input: {
+      type: "object",
+      properties: {
+        sceneId: { type: "string" },
+        name: { type: "string", description: "Name for this custom mesh" },
+        vertices: { type: "array", description: "Array of [x,y,z] vertex positions", items: { type: "array" } },
+        faces: { type: "array", description: "Array of face index arrays (triangles [a,b,c] or quads [a,b,c,d])", items: { type: "array" } },
+        position: { type: "array", description: "[x,y,z] position in scene" },
+        scale: { type: "array", description: "[x,y,z] scale" },
+        material: { type: "string", description: "Material preset name (metal, wood, glass, etc.)" },
+      },
+      required: ["sceneId", "vertices", "faces"],
+    },
+    tags: ["3d", "mesh", "custom", "freeform"],
+    source: "builtin",
+    run: async (input) => {
+      const scene = scenes.get(input.sceneId);
+      if (!scene) return { error: "Scene not found" };
+      if (!Array.isArray(input.vertices) || input.vertices.length < 3) return { error: "Need at least 3 vertices" };
+      if (!Array.isArray(input.faces) || !input.faces.length) return { error: "Need at least 1 face" };
+      const m = new MeshBuilder(input.name || "Custom");
+      m.addVertices(input.vertices.map(v => [v[0] || 0, v[1] || 0, v[2] || 0]));
+      for (const f of input.faces) { if (Array.isArray(f) && f.length >= 3) m.addFace(f); }
+      const obj = addObject(scene, m, { position: input.position, scale: input.scale });
+      if (input.material && MATERIAL_PRESETS[input.material]) {
+        const mat = { name: input.material, ...MATERIAL_PRESETS[input.material] };
+        obj.material = mat; scene.materials.push(mat);
+      }
+      return { objectId: obj.id, name: obj.name, vertices: m.vertices.length, faces: m.faces.length };
+    },
+  },
+  {
+    name: "transform_3d_object",
+    description: "Move, rotate, scale, duplicate, or mirror an existing object in the scene. Use for arranging objects, creating patterns, building arrays of repeated elements, or adjusting positions after creation.",
+    input: {
+      type: "object",
+      properties: {
+        sceneId: { type: "string" },
+        objectId: { type: "string" },
+        action: { type: "string", description: "move, rotate, scale, duplicate, mirror, delete" },
+        position: { type: "array", description: "[x,y,z] — for move: new position; for duplicate: offset" },
+        rotation: { type: "array", description: "[rx,ry,rz] rotation in degrees" },
+        scale: { type: "array", description: "[sx,sy,sz] scale factor" },
+        axis: { type: "string", description: "For mirror: x, y, or z" },
+        count: { type: "integer", description: "For duplicate: number of copies (array pattern)" },
+        spacing: { type: "array", description: "For duplicate+count: [dx,dy,dz] between each copy" },
+      },
+      required: ["sceneId", "objectId", "action"],
+    },
+    tags: ["3d", "transform", "modify"],
+    source: "builtin",
+    run: async (input) => {
+      const scene = scenes.get(input.sceneId);
+      if (!scene) return { error: "Scene not found" };
+      const obj = scene.objects.find(o => o.id === input.objectId);
+      if (!obj) return { error: "Object not found: " + input.objectId };
+      if (input.action === "move") {
+        obj.position = input.position || obj.position;
+        return { action: "moved", objectId: obj.id, position: obj.position };
+      }
+      if (input.action === "rotate") {
+        obj.rotation = input.rotation || obj.rotation;
+        return { action: "rotated", objectId: obj.id, rotation: obj.rotation };
+      }
+      if (input.action === "scale") {
+        obj.scale = input.scale || obj.scale;
+        return { action: "scaled", objectId: obj.id, scale: obj.scale };
+      }
+      if (input.action === "delete") {
+        scene.objects = scene.objects.filter(o => o.id !== input.objectId);
+        return { action: "deleted", objectId: input.objectId };
+      }
+      if (input.action === "mirror") {
+        const ax = { x: 0, y: 1, z: 2 }[input.axis || "x"] || 0;
+        const g = obj.geometry; if (!g) return { error: "No geometry to mirror" };
+        const m2 = new MeshBuilder(obj.name + "_mirror");
+        for (const v of g.vertices) { const mv = [...v]; mv[ax] = -mv[ax]; m2.vertices.push(mv); }
+        for (const f of g.faces) m2.faces.push([...f].reverse());
+        const pos = [...obj.position]; pos[ax] = -pos[ax];
+        const newObj = addObject(scene, m2, { position: pos, scale: [...obj.scale], material: obj.material });
+        return { action: "mirrored", objectId: newObj.id, axis: input.axis || "x" };
+      }
+      if (input.action === "duplicate") {
+        const n = input.count || 1;
+        const sp = input.spacing || input.position || [1, 0, 0];
+        const created = [];
+        for (let i = 0; i < n; i++) {
+          const pos = [obj.position[0] + sp[0] * (i + 1), obj.position[1] + sp[1] * (i + 1), obj.position[2] + sp[2] * (i + 1)];
+          const m2 = new MeshBuilder(obj.name + "_copy" + (i + 1));
+          m2.vertices = obj.geometry.vertices.map(v => [...v]);
+          m2.faces = obj.geometry.faces.map(f => [...f]);
+          const newObj = addObject(scene, m2, { position: pos, scale: [...obj.scale], material: obj.material });
+          created.push(newObj.id);
+        }
+        return { action: "duplicated", copies: created.length, objectIds: created };
+      }
+      return { error: "Unknown action: " + input.action + ". Use: move, rotate, scale, duplicate, mirror, delete" };
     },
   },
 ];
@@ -663,6 +1049,10 @@ module.exports = {
   PROCEDURAL,
   // Materials
   MATERIAL_PRESETS,
+  // Lighting
+  LIGHT_TYPES, LIGHTING_PRESETS, addLight,
+  // Camera
+  addCamera,
   // Scene
   createScene, addObject, LAYER_TIERS,
   // Export
