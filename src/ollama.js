@@ -1,7 +1,7 @@
 "use strict";
 // Local/any-model client — chat, model listing, coder-model selection.
 // By default talks to the local Ollama HTTP API (127.0.0.1:11434). If an
-// OpenAI-COMPATIBLE endpoint is configured (SENTINEL_API_BASE, e.g. OpenAI,
+// OpenAI-COMPATIBLE endpoint is configured (DARKNODE_API_BASE, e.g. OpenAI,
 // OpenRouter, Groq, DeepSeek, Together, Mistral, LM Studio, vLLM, llama.cpp),
 // it transparently drives ANY model there instead — same agentic tool loop.
 // The tool loop that USES this (ollamaExec / the TUI local turn) is in sentinel.js.
@@ -9,8 +9,8 @@ const http = require("http");
 const HOST = () => process.env.OLLAMA_HOST || "127.0.0.1";
 const PORT = () => +(process.env.OLLAMA_PORT || 11434);
 // Configured OpenAI-compatible base URL (any provider). When set, we route there.
-const API_BASE = () => (process.env.SENTINEL_API_BASE || process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || "").trim();
-const API_KEY = () => (process.env.SENTINEL_API_KEY || process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GROQ_API_KEY || "").trim();
+const API_BASE = () => (process.env.DARKNODE_API_BASE || process.env.SENTINEL_API_BASE || process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || "").trim();
+const API_KEY = () => (process.env.DARKNODE_API_KEY || process.env.SENTINEL_API_KEY || process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GROQ_API_KEY || "").trim();
 
 // POST to any OpenAI-compatible /chat/completions. The tool loop's role:"tool"
 // messages are mapped to user turns (this protocol is prompt-driven, not native
@@ -19,7 +19,7 @@ function openaiCompatChat(base, model, messages, format, signal) {
   return new Promise((resolve, reject) => {
     let url;
     try { url = new URL(base.replace(/\/+$/, "") + "/chat/completions"); }
-    catch (e) { return reject(new Error("invalid SENTINEL_API_BASE: " + base)); }
+    catch (e) { return reject(new Error("invalid DARKNODE_API_BASE: " + base)); }
     const lib = url.protocol === "https:" ? require("https") : require("http");
     const msgs = messages.map((m) => m.role === "tool" ? { role: "user", content: "[tool result] " + m.content } : m);
     const payload = { model, messages: msgs, stream: false, temperature: 0.2 };
@@ -45,7 +45,7 @@ function openaiCompatChat(base, model, messages, format, signal) {
 // Native Anthropic (Claude) Messages API — "actual Claude" via an API key, in-process
 // (NO headless Claude Code CLI). Used whenever the model id starts with "claude" and a
 // key is present. Same prompt-driven tool loop as every other engine.
-const ANTHROPIC_KEY = () => (process.env.ANTHROPIC_API_KEY || process.env.SENTINEL_ANTHROPIC_KEY || "").trim();
+const ANTHROPIC_KEY = () => (process.env.ANTHROPIC_API_KEY || process.env.DARKNODE_ANTHROPIC_KEY || process.env.SENTINEL_ANTHROPIC_KEY || "").trim();
 function hasAnthropic() { return !!ANTHROPIC_KEY(); }
 function anthropicChat(model, messages, format, signal) {
   return new Promise((resolve, reject) => {
@@ -99,13 +99,13 @@ function ollamaTags() {
 }
 // Pick the best available model for coding/agentic work. gpt-oss (OpenAI's open-weight
 // reasoning models) is preferred — gpt-oss:120b first, then 20b — as it's far stronger at
-// tool use than small local models. SENTINEL_MODEL overrides. Falls back through known
+// tool use than small local models. DARKNODE_MODEL overrides. Falls back through known
 // coder models, then anything code-ish, then whatever's installed.
 function pickCoderModel(ms) {
   ms = ms || [];
-  const rawWant = (process.env.SENTINEL_MODEL || "").trim();
+  const rawWant = (process.env.DARKNODE_MODEL || process.env.SENTINEL_MODEL || "").trim();
   if (rawWant) { const w = rawWant.toLowerCase(); const hit = ms.find((m) => m.toLowerCase() === w) || ms.find((m) => m.toLowerCase().startsWith(w)); return hit || rawWant; } // honor explicit choice even if not yet pulled (Ollama fetches on first use)
-  const pri = ["gpt-oss:120b", "gpt-oss:20b", "gpt-oss", "qwen2.5-coder", "deepseek-coder", "codellama", "hermes3", "dolphin3", "llama3.1"];
+  const pri = ["darknode", "gpt-oss:120b", "gpt-oss:20b", "gpt-oss", "qwen2.5-coder", "deepseek-coder", "codellama", "hermes3", "dolphin3", "llama3.1"];
   for (const p of pri) { const hit = ms.find((m) => m.toLowerCase().startsWith(p)); if (hit) return hit; }
   return ms.find((m) => /coder|code/i.test(m)) || ms[0] || "";
 }

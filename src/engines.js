@@ -41,8 +41,17 @@ const ENGINES = {
     caps: { model: true, cowork: true },
     tips: ["this AI runs 100% on your machine — private, offline-capable, and free", "no token charges here — the meter shows estimated local tokens only", "switch local models anytime with /model (e.g. qwen2.5-coder, hermes3)", "point it at ANY model with /api <base-url> [model] — OpenAI, OpenRouter, Groq, DeepSeek, vLLM…", "it has full local tool access: read, write, edit files and run commands"],
   },
+  darknode: {
+    // Darknode's own security model, run through the same local tool loop as
+    // ollama (full read/write/edit/run access) — agentic like Claude Code, but
+    // private and Darknode-branded. Defaults to the `darknode` Ollama model;
+    // override with DARKNODE_MODEL or point at a hosted endpoint via /api.
+    label: "Darknode AI (local)", bin: "ollama", install: "curl -fsSL https://ollama.com/install.sh | sh", kind: "local", paid: false, ctx: 8192, model: "darknode",
+    caps: { model: true, cowork: true },
+    tips: ["Darknode AI runs locally through the same agentic loop — read, write, edit files and run commands", "build it from the darknode-ai repo: ollama create darknode -f Modelfile (see FOUNDATION.md)", "expert offensive + defensive security, in an authorized-engagement frame", "point it at a hosted 100B/500B Darknode with /api <base-url> darknode"],
+  },
 };
-const ENGINE_ORDER = ["claude", "gemini", "codex", "opencode", "aider", "ollama"];
+const ENGINE_ORDER = ["claude", "gemini", "codex", "opencode", "aider", "ollama", "darknode"];
 const engineCap = (e, c) => !!(ENGINES[e] && ENGINES[e].caps && ENGINES[e].caps[c]); // does this engine support this cross-engine feature?
 const ENGINE_TIPS = Object.fromEntries(Object.entries(ENGINES).map(([k, v]) => [k, v.tips || []]));
 
