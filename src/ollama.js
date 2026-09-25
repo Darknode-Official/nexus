@@ -111,4 +111,36 @@ function pickCoderModel(ms) {
 }
 // Is an external OpenAI-compatible model API configured (vs local Ollama)?
 function apiConfigured() { return !!API_BASE(); }
-module.exports = { ollamaChat, ollamaTags, pickCoderModel, apiConfigured, API_BASE, API_KEY, hasAnthropic, ANTHROPIC_KEY };
+
+// Auto-build the local `darknode` Ollama model from the bundled Modelfile on first
+// local use. Skips when DARKNODE_NO_AUTOINSTALL is set, when an external API base is
+// configured (no local Ollama in play), or when a `darknode`/`darknode:*` model is
+// already installed. Streams `ollama create` progress lines to `log`. Never throws;
+// resolves true when the model is present/built, false on any failure.
+function ensureDarknodeModel(log) {
+  const say = typeof log === "function" ? log : function () {};
+  return new Promise((resolve) => {
+    try {
+      if (process.env.DARKNODE_NO_AUTOINSTALL) return resolve(true);
+      if (API_BASE()) return resolve(true); // remote API model, nothing to build locally
+      ollamaTags().then((tags) => {
+        const have = (tags || []).some((t) => { const n = String(t).toLowerCase(); return n === "darknode" || n.indexOf("darknode:") === 0; });
+        if (have) return resolve(true);
+        const path = require("path");
+        const fs = require("fs");
+        const mf = path.join(__dirname, "darknode.Modelfile");
+        if (!fs.existsSync(mf)) { say("darknode: bundled Modelfile not found at " + mf); return resolve(false); }
+        say("darknode: building local model (ollama create darknode) — one-time first-run setup...");
+        let proc;
+        try { proc = require("child_process").spawn("ollama", ["create", "darknode", "-f", mf], { stdio: ["ignore", "pipe", "pipe"] }); }
+        catch (e) { say("darknode: cannot run ollama — " + e.message); return resolve(false); }
+        const onData = (buf) => String(buf).split(/\r?\n/).forEach((l) => { if (l.trim()) say(l.trim()); });
+        if (proc.stdout) proc.stdout.on("data", onData);
+        if (proc.stderr) proc.stderr.on("data", onData);
+        proc.on("error", (e) => { say("darknode: build error — " + e.message); resolve(false); });
+        proc.on("close", (code) => { if (code === 0) { say("darknode: model ready."); resolve(true); } else { say("darknode: build failed (exit " + code + ")"); resolve(false); } });
+      }).catch(() => resolve(false));
+    } catch (_) { resolve(false); }
+  });
+}
+module.exports = { ollamaChat, ollamaTags, pickCoderModel, apiConfigured, ensureDarknodeModel, API_BASE, API_KEY, hasAnthropic, ANTHROPIC_KEY };

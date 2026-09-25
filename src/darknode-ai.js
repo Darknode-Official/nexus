@@ -278,6 +278,16 @@ class DarknodeAI {
 
 // ================= QUICK SETUP =================
 
+// Auto-install the local `darknode` Ollama model at most once per process.
+let _darknodeEnsure = null;
+function ensureDarknodeModelOnce() {
+  if (!_darknodeEnsure) {
+    try { _darknodeEnsure = require("./ollama").ensureDarknodeModel((line) => { try { process.stderr.write(line + "\n"); } catch (_) {} }); }
+    catch (_) { _darknodeEnsure = Promise.resolve(false); }
+  }
+  return _darknodeEnsure;
+}
+
 /**
  * Create a ready-to-use DarknodeAI instance connected to local Ollama.
  */
@@ -287,6 +297,9 @@ function createWithOllama(model) {
 
   const ai = new DarknodeAI({
     modelFn: async (messages) => {
+      // First local turn on the `darknode` model auto-builds it from the bundled
+      // Modelfile (once per process). Never throws; a build failure just proceeds.
+      if (String(model).toLowerCase().indexOf("darknode") === 0) await ensureDarknodeModelOnce();
       return new Promise((resolve, reject) => {
         const body = JSON.stringify({ model, messages, stream: false, options: { temperature: 0.2 } });
         const req = http.request({ host: "127.0.0.1", port: 11434, path: "/api/chat", method: "POST",
