@@ -16,16 +16,20 @@ function geminiParse(raw) {
   } catch (_) { return null; }
 }
 function codexParse(raw) {
-  const lines = String(raw).split(/\r?\n/); let text = "", inTok = 0, outTok = 0, gotText = false, gotUsage = false;
+  const lines = String(raw).split(/\r?\n/); let text = "", inTok = 0, outTok = 0, gotText = false, gotUsage = false, error = "";
   for (const ln of lines) {
     const s = ln.trim(); if (s[0] !== "{") continue;
     let e; try { e = JSON.parse(s); } catch (_) { continue; }
     const item = e.item || e.msg || e, itype = (item && item.type) || e.type;
     if (itype === "agent_message" || itype === "assistant_message") { const t = item.text || item.message || item.content; if (typeof t === "string" && t) { text = t; gotText = true; } } // latest complete assistant message
+    if (e.type === "turn.failed" && e.error && typeof e.error.message === "string") error = e.error.message; // the turn's final error wins
+    else if (e.type === "error" && typeof e.message === "string" && !/^Reconnecting\.\.\./.test(e.message)) error = error || e.message;
     const u = e.usage || (item && item.usage) || (itype === "token_count" ? (e.usage || e) : null);
-    if (u && (u.input_tokens != null || u.output_tokens != null)) { inTok = (u.input_tokens || 0) + (u.cached_input_tokens || u.cache_read_input_tokens || 0); outTok = u.output_tokens || 0; gotUsage = true; }
+    // input_tokens already includes cached_input_tokens (OpenAI convention), so the cached count is not added on top
+    if (u && (u.input_tokens != null || u.output_tokens != null)) { inTok = u.input_tokens || 0; outTok = u.output_tokens || 0; gotUsage = true; }
   }
-  return (gotText || gotUsage) ? { text, inTok, outTok } : null;
+  if (error) error = error.replace(/,\s*(url|cf-ray|request id):.*$/i, "").trim(); // drop transport details
+  return (gotText || gotUsage || error) ? { text, inTok, outTok, error } : null;
 }
 
 module.exports = { geminiParse, codexParse };
