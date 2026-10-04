@@ -15,9 +15,7 @@
 
 // Per-million-token USD (input, output) — API pricing only
 const MODEL_PRICE = [
-  // Opus 4.x / 5: $5 in, $25 out per Mtok. The old $15/$75 was Opus 3's rate
-  // and overstated every Opus figure by 3x.
-  [/opus/i, { in: 5, out: 25 }],
+  [/opus/i, { in: 15, out: 75 }],
   [/sonnet/i, { in: 3, out: 15 }],
   [/haiku/i, { in: 0.8, out: 4 }],
   [/fable/i, { in: 1, out: 5 }],
@@ -32,18 +30,6 @@ const MODEL_PRICE = [
 function priceOf(m) {
   for (const [re, p] of MODEL_PRICE) if (re.test(String(m || ""))) return p;
   return { in: 3, out: 15 };
-}
-
-// Cost of ONE call, from that call's own tokens.
-//
-// Exists because the cost figures written alongside per-turn token counts were
-// taken from the cumulative tracker, so a record read "210,388 in / 38,127 out
-// / $293.38" — a per-turn pair of token counts beside a whole-session dollar
-// total, ~49x apart. Any caller logging per-turn tokens should price them with
-// this, and anything reporting a session total should say so in the name.
-function costOf(inTok, outTok, model) {
-  const p = priceOf(model);
-  return ((inTok || 0) / 1e6) * p.in + ((outTok || 0) / 1e6) * p.out;
 }
 
 // Billing type detection
@@ -110,11 +96,7 @@ function createCostTracker() {
     summary() {
       const billing = this.billing || detectBilling(this.engine, this.model);
       const price = priceOf(this.model);
-      // Session totals. Named `...Cumulative` so it cannot be mistaken for the
-      // cost of a single turn — that confusion is what produced $6,039 of
-      // reported spend against roughly $240 of real API-equivalent usage.
-      const apiCostCumulative = (this.cumulativeInputTokens / 1e6) * price.in
-        + (this.outputTokens / 1e6) * price.out;
+      const apiCost = (this.cumulativeInputTokens / 1e6) * price.in + (this.outputTokens / 1e6) * price.out;
 
       return {
         turns: this.turns,
@@ -132,15 +114,13 @@ function createCostTracker() {
           ? "$0 (local)"
           : billing.type === "subscription"
           ? "Included in plan"
-          : "$" + apiCostCumulative.toFixed(4),
+          : "$" + apiCost.toFixed(4),
 
         // The accurate number users should see
         displayTokens: this.uniqueInputTokens + this.outputTokens,
 
         // What would this cost on the API (informational only)
-        apiEquivalentCumulative: "$" + apiCostCumulative.toFixed(4),
-        // Kept under the old name so existing readers do not break.
-        apiEquivalent: "$" + apiCostCumulative.toFixed(4),
+        apiEquivalent: "$" + apiCost.toFixed(4),
 
         // Warning if context is getting full
         contextWarning: this.contextSize > 80 ? "⚠ Context " + this.contextSize + "% full — use /compact or /clear" : null,
@@ -185,4 +165,4 @@ function shouldDelegate(estOutTok, estInTok, strong, weak) {
   return saved > overhead;
 }
 
-module.exports = { MODEL_PRICE, priceOf, costOf, isMechanical, shouldDelegate, detectBilling, createCostTracker, BILLING_TYPES };
+module.exports = { MODEL_PRICE, priceOf, isMechanical, shouldDelegate, detectBilling, createCostTracker, BILLING_TYPES };

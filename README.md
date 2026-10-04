@@ -4,8 +4,8 @@ The most complete open-source AI coding agent engine. Hybrid local + cloud,
 multi-agent orchestration, adaptive learning, research-backed prompt optimization,
 full MCP integration, and 8 AI engines — from local Ollama to Claude Opus.
 
-Ships in [`sentinel-cli`](https://github.com/Darknode-Official/sentinel-cli) as
-`sentinel nexus`.
+Ships in [`darknode-cli`](https://github.com/Darknode-Official/darknode-cli) as
+`darknode nexus`.
 
 ## What Makes Nexus Different
 
@@ -95,11 +95,11 @@ Ships in [`sentinel-cli`](https://github.com/Darknode-Official/sentinel-cli) as
 ## Quick Start
 
 ```bash
-sentinel nexus "fix the login bug"
-sentinel nexus --engine ollama "explain this codebase"
-sentinel nexus run "build a REST API with auth"
-sentinel nexus agents "add tests" "write docs" "fix lint"
-sentinel nexus --engine hybrid "refactor auth module"  # smart delegation
+darknode nexus "fix the login bug"
+darknode nexus --engine ollama "explain this codebase"
+darknode nexus run "build a REST API with auth"
+darknode nexus agents "add tests" "write docs" "fix lint"
+darknode nexus --engine hybrid "refactor auth module"  # smart delegation
 ```
 
 ## License

@@ -5,7 +5,7 @@
 // when they detect something wrong. They don't generate output until triggered.
 //
 // Types of ghosts:
-//   SENTINEL — watches for security issues in real-time (SQL injection, hardcoded secrets)
+//   SENTRY — watches for security issues in real-time (SQL injection, hardcoded secrets)
 //   GUARDIAN — watches for bugs before you commit (null refs, type mismatches)
 //   ORACLE  — pre-fetches context you'll probably need next (based on cursor position/file)
 //   CRITIC  — rates the quality of changes and warns before you commit bad code
@@ -26,8 +26,8 @@ function run(cmd, cwd) {
 // ---- Ghost Types ----
 
 const GHOST_TYPES = {
-  sentinel: {
-    name: "Sentinel",
+  sentry: {
+    name: "Sentry",
     icon: "🛡",
     description: "Watches for security issues in real-time",
     patterns: [
@@ -90,8 +90,8 @@ function scan(cwd, files) {
     try { content = fs.readFileSync(fp, "utf8"); } catch (_) { continue; }
     const lines = content.split("\n");
 
-    // Sentinel + Guardian pattern scans
-    for (const ghostType of ["sentinel", "guardian"]) {
+    // Sentry + Guardian pattern scans
+    for (const ghostType of ["sentry", "guardian"]) {
       const ghost = GHOST_TYPES[ghostType];
       for (let i = 0; i < lines.length; i++) {
         for (const pattern of ghost.patterns) {

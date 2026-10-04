@@ -8,7 +8,7 @@
 // The subset in DEFAULT_MCP is BUNDLED — Nexus auto-connects those (no API key) on
 // every launch, so a fresh download already has web fetch, persistent memory, a
 // reasoning scratchpad, live library docs, time, and git out of the box. Disable with
-// SENTINEL_NO_DEFAULT_MCP=1; each only connects if its runtime (npx/uvx) is installed.
+// DARKNODE_NO_DEFAULT_MCP=1; each only connects if its runtime (npx/uvx) is installed.
 const MCP_CATALOG = {
   // ---- bundled by default (no key, broadly useful) ----
   fetch: { desc: "Fetch a web page and convert it to clean markdown for the model", spec: { command: "uvx", args: ["mcp-server-fetch"] } },

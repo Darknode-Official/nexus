@@ -13,7 +13,7 @@
   },
   "keywords": [
     "ai", "coding-agent", "ollama", "claude", "gemini", "codex", "mcp",
-    "multi-agent", "agentic", "nexus", "sentinel", "reasoning", "metacognition",
+    "multi-agent", "agentic", "nexus", "reasoning", "metacognition",
     "knowledge-graph", "prompt-optimization", "self-evaluation", "verification"
   ],
   "engines": { "node": ">=18.0.0" },

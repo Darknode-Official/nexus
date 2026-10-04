@@ -4,7 +4,7 @@
 // OpenAI-COMPATIBLE endpoint is configured (DARKNODE_API_BASE, e.g. OpenAI,
 // OpenRouter, Groq, DeepSeek, Together, Mistral, LM Studio, vLLM, llama.cpp),
 // it transparently drives ANY model there instead — same agentic tool loop.
-// The tool loop that USES this (ollamaExec / the TUI local turn) is in sentinel.js.
+// The tool loop that USES this (ollamaExec / the TUI local turn) is in the Darknode CLI.
 const http = require("http");
 const HOST = () => process.env.OLLAMA_HOST || "127.0.0.1";
 const PORT = () => +(process.env.OLLAMA_PORT || 11434);
