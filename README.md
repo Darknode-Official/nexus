@@ -1,31 +1,33 @@
 # Nexus
 
-The most complete open-source AI coding agent engine. Hybrid local + cloud,
-multi-agent orchestration, adaptive learning, research-backed prompt optimization,
-full MCP integration, and 8 AI engines — from local Ollama to Claude Opus.
+An open-source AI coding and security agent engine. Hybrid local + cloud
+execution, multi-agent orchestration, adaptive per-project learning, prompt
+optimization, full MCP integration, and multiple AI engines from local Ollama to
+hosted Claude, GPT, and Gemini.
 
 Ships in [`darknode-cli`](https://github.com/Darknode-Official/darknode-cli) as
 `darknode nexus`.
 
-## What Makes Nexus Different
+## What Nexus Does
 
-| Feature | Nexus | Claude Code | Cursor | Devin |
-|---------|-------|-------------|--------|-------|
-| Multi-engine (8 AI backends) | ✅ | ❌ | ❌ | ❌ |
-| Local/private AI (Ollama) | ✅ | ❌ | ❌ | ❌ |
-| Multi-agent orchestration | ✅ | ✅ | ❌ | ✅ |
-| Adaptive per-project learning | ✅ | ❌ | ❌ | ❌ |
-| Smart model delegation (cowork) | ✅ | ❌ | ❌ | ❌ |
-| Research-backed prompt optimization | ✅ | ❌ | ❌ | ❌ |
-| Full MCP client + 25 servers | ✅ | ✅ | ❌ | ❌ |
-| Knowledge graph of codebase | ✅ | ❌ | ❌ | ❌ |
-| Self-evaluation + auto-retry | ✅ | ❌ | ❌ | ❌ |
-| Plugin system | ✅ | ❌ | ✅ | ❌ |
-| Response cache + context squeeze | ✅ | ✅ | ❌ | ❌ |
-| Live cost meter + /undo | ✅ | ✅ | ❌ | ❌ |
-| Security scanner built-in | ✅ | ❌ | ❌ | ❌ |
-| Git intelligence (ownership, velocity) | ✅ | ❌ | ❌ | ❌ |
-| Autonomous /loop with goal tracking | ✅ | ✅ | ❌ | ✅ |
+This describes Nexus only; it makes no claims about other tools. Each capability
+is implemented in this repo (see the module tree below).
+
+- Multi-engine: routes across local and hosted AI backends through one interface.
+- Local/private AI: runs fully on-device via Ollama when nothing should leave the machine.
+- Multi-agent orchestration with worktree isolation.
+- Adaptive per-project learning that persists context across sessions.
+- Smart model delegation (`cowork`): mechanical steps on cheaper models, hard steps on stronger ones.
+- Prompt optimization.
+- Full MCP client (25 servers available, 6 bundled by default).
+- Knowledge graph of the codebase.
+- Self-evaluation with automatic retry.
+- Plugin system: custom tools, commands, hooks, intents.
+- Response cache and context compaction to reduce token spend.
+- Live cost meter and `/undo` checkpoints.
+- Built-in security scanning.
+- Git intelligence: ownership and velocity signals.
+- Autonomous `/loop` with goal tracking.
 
 ## Architecture
 
