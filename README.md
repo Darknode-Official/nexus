@@ -75,7 +75,7 @@ Ships in [`darknode-cli`](https://github.com/Darknode-Official/darknode-cli) as
 │  ├─ Project Bootstrap    scaffolds with CI/CD, tests, security     │
 │  └─ 8 AI Engines         Claude · Gemini · Codex · Ollama · more  │
 │                                                                    │
-│  52 modules · 9,627 lines · 115 tests · 100% tested                           │
+│  61 modules · 11,860 lines · zero-dependency test suite            │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
