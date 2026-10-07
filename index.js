@@ -89,6 +89,13 @@ const changelog      = require("./src/changelog");
 const parsers        = require("./src/parsers");
 const bootstrap      = require("./src/project-bootstrap");
 
+// Expansion subsystems (token-saving, repo intelligence, code security, performance, patching)
+const tokensave      = require("./src/tokensave");
+const codegraph      = require("./src/codegraph");
+const sectools       = require("./src/sectools");
+const perf           = require("./src/perf");
+const patch          = require("./src/patch");
+
 const { version }    = require("./package.json");
 
 module.exports = {
@@ -113,4 +120,6 @@ module.exports = {
   // Utilities
   config, autocorrect,
   codestats, deps, envaudit, todos, tools, changelog, parsers, bootstrap,
+  // Expansion subsystems
+  tokensave, codegraph, sectools, perf, patch,
 };

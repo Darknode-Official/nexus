@@ -6,11 +6,11 @@
   "main": "index.js",
   "author": "Darknode-Official",
   "scripts": {
-    "test": "node --test test/run.js test/ui.test.js",
-    "test:verbose": "node --test --test-reporter=spec test/run.js test/ui.test.js",
+    "test": "node --test test/run.js test/ui.test.js test/tokensave/ test/codegraph/ test/sectools/ test/perf/ test/patch/",
+    "test:verbose": "node --test --test-reporter=spec test/run.js test/ui.test.js test/tokensave/ test/codegraph/ test/sectools/ test/perf/ test/patch/",
     "evidence": "node tools/ui-snapshot.js",
-    "lint": "for f in src/*.js index.js; do node -c \"$f\" || exit 1; done && echo 'All files valid'",
-    "stats": "echo \"$(ls src/*.js | wc -l) modules, $(cat src/*.js | wc -l) lines\" && node --test test/run.js 2>&1 | grep '# pass'"
+    "lint": "for f in src/*.js src/*/*.js index.js; do node -c \"$f\" || exit 1; done && echo 'All files valid'",
+    "stats": "echo \"$(find src -name '*.js' | wc -l) modules, $(find src -name '*.js' | xargs cat | wc -l) lines\" && npm test 2>&1 | grep '# pass'"
   },
   "keywords": [
     "ai", "coding-agent", "ollama", "claude", "gemini", "codex", "mcp",
