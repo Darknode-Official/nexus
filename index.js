@@ -60,6 +60,7 @@ const vulnScanner    = require("./src/vuln-scanner");
 // Infrastructure
 const engines        = require("./src/engines");
 const ollama         = require("./src/ollama");
+const localPreflight = require("./src/local-preflight");
 const mcpBridge      = require("./src/mcp-bridge");
 const mcpCatalog     = require("./src/mcp-catalog");
 const modeler3d      = require("./src/mcp-3d-modeler");
@@ -106,7 +107,7 @@ module.exports = {
   // Security
   attackPlanner, ctfAssist, reportGen, compliance, threatModel, vulnScanner,
   // Infrastructure
-  engines, ollama, mcpBridge, mcpCatalog, modeler3d, errorRecovery, loopDetect,
+  engines, ollama, localPreflight, mcpBridge, mcpCatalog, modeler3d, errorRecovery, loopDetect,
   // Ops
   telemetry, ledger, plugins, bgjobs, pricing, costsave, overhead, gitIntel,
   // Utilities

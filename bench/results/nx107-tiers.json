@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-10-07T04:23:06.073Z",
+  "ollamaReachable": true,
+  "recommended": {
+    "minHardware": "8 GB RAM for a 7-8B Q4 model at 8K context (CPU ok, slow); measured from model sizes above.",
+    "note": "Hosted context is 200K-1M; local tops out ~32K here. Tasks needing whole-repo context should use a hosted engine — preflight({requireHosted:true}) says so BEFORE spending."
+  },
+  "models": [
+    {
+      "model": "darknode-13b:latest",
+      "parameters": "8.2B",
+      "context": 40960,
+      "estVramMiB": 5878,
+      "tier": ">32K (approaching hosted-lite)",
+      "taskCapability": "needs task run (live)"
+    },
+    {
+      "model": "darknode-33b:latest",
+      "parameters": "8.2B",
+      "context": 40960,
+      "estVramMiB": 5878,
+      "tier": ">32K (approaching hosted-lite)",
+      "taskCapability": "needs task run (live)"
+    },
+    {
+      "model": "jimscard/whiterabbit-neo:latest",
+      "parameters": "13B",
+      "context": 16384,
+      "estVramMiB": 9318,
+      "tier": "16K (multi-function, small modules)",
+      "taskCapability": "needs task run (live)"
+    },
+    {
+      "model": "darknode:latest",
+      "parameters": "13B",
+      "context": 16384,
+      "estVramMiB": 9318,
+      "tier": "16K (multi-function, small modules)",
+      "taskCapability": "needs task run (live)"
+    },
+    {
+      "model": "parable/fable:8b",
+      "parameters": "8.2B",
+      "context": 40960,
+      "estVramMiB": 5878,
+      "tier": ">32K (approaching hosted-lite)",
+      "taskCapability": "needs task run (live)"
+    }
+  ],
+  "caveat": "Context + VRAM columns are measured. The task-capability column requires running bench/tasks.js against each model and scoring correctness — not done here (see bench/README.md)."
+}

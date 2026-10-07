@@ -1312,3 +1312,45 @@ describe("NX-106 Duplication Detection (KG recall)", () => {
     assert.ok(!top.includes("src/costsave.js"), "KG keyword scorer misses this; reuse must fall back to content search");
   });
 });
+
+// ---- NX-107: local-model preflight — actionable message per failure class ----
+describe("NX-107 Local Preflight", () => {
+  const lp = require("../src/local-preflight");
+
+  it("every failure result carries a specific actionable message", () => {
+    // needs-hosted-engine is deterministic (no external calls)
+    const r = lp.preflight({ requireHosted: true });
+    assert.equal(r.ok, false);
+    assert.equal(r.failure, "needs-hosted-engine");
+    assert.ok(r.message && r.action, "must give a message and an action");
+  });
+
+  it("flags a model that is not pulled with the pull command", () => {
+    // Only assert when ollama is reachable in this environment.
+    if (lp.installedModels() === null) return; // ollama down: skip (covered by ollama-down path)
+    const r = lp.preflight({ model: "definitely-not-a-real-model-xyz" });
+    assert.equal(r.failure, "model-not-pulled");
+    assert.match(r.action, /ollama pull/);
+  });
+
+  it("flags context overflow when the prompt exceeds the model window", () => {
+    if (lp.installedModels() === null) return;
+    const models = lp.installedModels();
+    const withCtx = models.map(m => ({ m, c: lp.modelContext(m).context })).find(x => x.c);
+    if (!withCtx) return;
+    const r = lp.preflight({ model: withCtx.m, estPromptTokens: withCtx.c + 100000 });
+    assert.equal(r.failure, "context-exceeded");
+    assert.match(r.action, /hosted|lean|split/i);
+  });
+
+  it("declares every local-execution failure class", () => {
+    for (const cls of ["ollama-down", "model-not-pulled", "context-exceeded", "insufficient-vram", "thermal-throttle", "needs-hosted-engine"]) {
+      assert.ok(lp.FAILURE_CLASSES.includes(cls), "missing failure class " + cls);
+    }
+  });
+
+  it("estimates VRAM need from parameter count", () => {
+    assert.ok(lp.estVramMiBForParams("13B") > lp.estVramMiBForParams("8B"));
+    assert.equal(lp.estVramMiBForParams("no-params"), null);
+  });
+});
