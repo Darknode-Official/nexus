@@ -68,6 +68,7 @@ const plugins        = require("./src/plugins");
 const bgjobs         = require("./src/bgjobs");
 const pricing        = require("./src/pricing");
 const costsave       = require("./src/costsave");
+const overhead       = require("./src/overhead");
 const gitIntel       = require("./src/git-intelligence");
 
 // Utilities
@@ -100,7 +101,7 @@ module.exports = {
   // Infrastructure
   engines, ollama, mcpBridge, mcpCatalog, modeler3d, errorRecovery,
   // Ops
-  telemetry, plugins, bgjobs, pricing, costsave, gitIntel,
+  telemetry, plugins, bgjobs, pricing, costsave, overhead, gitIntel,
   // Utilities
   codestats, deps, envaudit, todos, tools, changelog, parsers, bootstrap,
 };

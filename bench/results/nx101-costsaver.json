@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-10-07T03:59:15.667Z",
+  "claim": "README: Cost Saver = 10-30% savings from dedup, cache, squeeze",
+  "bestCase_sameFileInlinedThrice": {
+    "before": 1242,
+    "after": 453,
+    "savedTok": 789,
+    "pct": 63.5
+  },
+  "whitespaceOnly": {
+    "before": 14,
+    "after": 10,
+    "savedTok": 4,
+    "pct": 28.6
+  },
+  "realistic_perTask": [
+    {
+      "id": "t1",
+      "before": 4005,
+      "after": 4005,
+      "savedTok": 0,
+      "pct": 0
+    },
+    {
+      "id": "t2",
+      "before": 4023,
+      "after": 4020,
+      "savedTok": 3,
+      "pct": 0.1
+    },
+    {
+      "id": "t3",
+      "before": 4020,
+      "after": 4020,
+      "savedTok": 0,
+      "pct": 0
+    },
+    {
+      "id": "t4",
+      "before": 4012,
+      "after": 4012,
+      "savedTok": 0,
+      "pct": 0
+    },
+    {
+      "id": "t5",
+      "before": 3777,
+      "after": 3777,
+      "savedTok": 0,
+      "pct": 0
+    },
+    {
+      "id": "t6",
+      "before": 3788,
+      "after": 3787,
+      "savedTok": 1,
+      "pct": 0
+    },
+    {
+      "id": "t7",
+      "before": 3996,
+      "after": 3996,
+      "savedTok": 0,
+      "pct": 0
+    },
+    {
+      "id": "t8",
+      "before": 4028,
+      "after": 4025,
+      "savedTok": 3,
+      "pct": 0.1
+    }
+  ],
+  "realistic_avgPct": 0,
+  "verdict": "The 10-30% figure is ACHIEVABLE ONLY in the dedup best case (same file inlined multiple times): 63.5% here. On realistic single-pass Nexus prompts the squeeze reclaims 0% (mostly whitespace). The response cache saves 100% but ONLY on exact read-only repeats (a hit-rate, not a per-turn saving). RECOMMENDATION: the flat '10-30%' claim is not supported for a typical turn; either qualify it as 'up to ~X% when context contains duplicated file blocks, plus cache hits on exact repeats' or drop it."
+}

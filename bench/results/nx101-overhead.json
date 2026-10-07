@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-10-07T03:58:20.487Z",
+  "targetDir": "/home/manav/projects/nexus-eng",
+  "unit": "estimated tokens (ceil(chars/4)) — ratios robust to the estimator",
+  "tasks": 8,
+  "perTask": [
+    {
+      "id": "t1",
+      "class": "feature-existing",
+      "task": "Add a --json flag to the telemetry dashboard command so it p",
+      "bareTokens": 23,
+      "fullTokens": 3988,
+      "leanTokens": 156,
+      "fullOverhead": 3965,
+      "leanOverhead": 133,
+      "fullRatio": 173.39,
+      "leanRatio": 6.78,
+      "leanSavesVsFull": 3832,
+      "breakdown": {
+        "bareTask": 23,
+        "context": 3732,
+        "knowledgeGraph": 76,
+        "mcpTools": 0,
+        "promptTemplate": 113,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t2",
+      "class": "multi-file",
+      "task": "Rename the costsave.squeezeContext function to compactContex",
+      "bareTokens": 29,
+      "fullTokens": 4006,
+      "leanTokens": 169,
+      "fullOverhead": 3977,
+      "leanOverhead": 140,
+      "fullRatio": 138.14,
+      "leanRatio": 5.83,
+      "leanSavesVsFull": 3837,
+      "breakdown": {
+        "bareTask": 29,
+        "context": 3732,
+        "knowledgeGraph": 70,
+        "mcpTools": 0,
+        "promptTemplate": 113,
+        "cotWrapper": 35
+      }
+    },
+    {
+      "id": "t3",
+      "class": "diagnosis",
+      "task": "The budget enforcer stops a run one step too late; diagnose ",
+      "bareTokens": 37,
+      "fullTokens": 4006,
+      "leanTokens": 184,
+      "fullOverhead": 3969,
+      "leanOverhead": 147,
+      "fullRatio": 108.27,
+      "leanRatio": 4.97,
+      "leanSavesVsFull": 3822,
+      "breakdown": {
+        "bareTask": 37,
+        "context": 3723,
+        "knowledgeGraph": 74,
+        "mcpTools": 0,
+        "promptTemplate": 113,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t4",
+      "class": "long-horizon",
+      "task": "Implement an append-only audit log for the sandbox with rota",
+      "bareTokens": 31,
+      "fullTokens": 3998,
+      "leanTokens": 173,
+      "fullOverhead": 3967,
+      "leanOverhead": 142,
+      "fullRatio": 128.97,
+      "leanRatio": 5.58,
+      "leanSavesVsFull": 3825,
+      "breakdown": {
+        "bareTask": 31,
+        "context": 3727,
+        "knowledgeGraph": 74,
+        "mcpTools": 0,
+        "promptTemplate": 114,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t5",
+      "class": "dependency-upgrade",
+      "task": "Upgrade the project to Node 22 features where safe and recor",
+      "bareTokens": 21,
+      "fullTokens": 3763,
+      "leanTokens": 153,
+      "fullOverhead": 3742,
+      "leanOverhead": 132,
+      "fullRatio": 179.19,
+      "leanRatio": 7.29,
+      "leanSavesVsFull": 3610,
+      "breakdown": {
+        "bareTask": 21,
+        "context": 3510,
+        "knowledgeGraph": 76,
+        "mcpTools": 0,
+        "promptTemplate": 114,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t6",
+      "class": "security-capability",
+      "task": "Refuse any shell command that writes outside the declared pr",
+      "bareTokens": 27,
+      "fullTokens": 3770,
+      "leanTokens": 165,
+      "fullOverhead": 3743,
+      "leanOverhead": 138,
+      "fullRatio": 139.63,
+      "leanRatio": 6.11,
+      "leanSavesVsFull": 3605,
+      "breakdown": {
+        "bareTask": 27,
+        "context": 3512,
+        "knowledgeGraph": 69,
+        "mcpTools": 0,
+        "promptTemplate": 114,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t7",
+      "class": "feature-existing",
+      "task": "Add a cache-hit counter to costsave.cacheGet and surface it ",
+      "bareTokens": 19,
+      "fullTokens": 3976,
+      "leanTokens": 148,
+      "fullOverhead": 3957,
+      "leanOverhead": 129,
+      "fullRatio": 209.26,
+      "leanRatio": 7.79,
+      "leanSavesVsFull": 3828,
+      "breakdown": {
+        "bareTask": 19,
+        "context": 3727,
+        "knowledgeGraph": 77,
+        "mcpTools": 0,
+        "promptTemplate": 114,
+        "cotWrapper": 21
+      }
+    },
+    {
+      "id": "t8",
+      "class": "diagnosis",
+      "task": "Explain why cowork.costSavings reports a larger saving than ",
+      "bareTokens": 27,
+      "fullTokens": 4008,
+      "leanTokens": 165,
+      "fullOverhead": 3981,
+      "leanOverhead": 138,
+      "fullRatio": 148.44,
+      "leanRatio": 6.11,
+      "leanSavesVsFull": 3843,
+      "breakdown": {
+        "bareTask": 27,
+        "context": 3731,
+        "knowledgeGraph": 50,
+        "mcpTools": 0,
+        "promptTemplate": 114,
+        "cotWrapper": 62
+      }
+    }
+  ],
+  "aggregate": {
+    "avgBareTokens": 27,
+    "avgFullTokens": 3939,
+    "avgLeanTokens": 164,
+    "avgFullOverheadRatio": 153.16,
+    "avgLeanOverheadRatio": 6.31,
+    "tasksWhereNexusInputAtOrBelowBare": "0/8",
+    "tasksWhereLeanBeatsFull": "8/8"
+  },
+  "caveats": [
+    "Additive INPUT overhead only. Does NOT include the engine's own lazy context gathering, output tokens, or real dollar billing.",
+    "A full Nexus-vs-direct-engine dollar comparison needs live runs with credentials (ANTHROPIC_API_KEY or an authed claude/gemini/codex CLI). See bench/README.md.",
+    "Cache reclaim applies only to EXACT read-only repeats; squeeze reclaim applies only to duplicated inlined blocks + whitespace."
+  ]
+}

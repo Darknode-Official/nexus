@@ -23,7 +23,15 @@ is implemented in this repo (see the module tree below).
 - Knowledge graph of the codebase.
 - Self-evaluation with automatic retry.
 - Plugin system: custom tools, commands, hooks, intents.
-- Response cache and context compaction to reduce token spend.
+- Response cache and context compaction to reduce token spend. Measured saving:
+  up to ~60% when context contains duplicated file blocks and 100% on exact
+  read-only cache hits, but ~0% on a typical single-pass turn — see
+  [`bench/`](bench/README.md). Treat the cost-saver as a reclaim of Nexus's own
+  overhead, not as making Nexus cheaper than a bare engine call.
+- Lean path (`--lean`): disables auto-context-gather, knowledge-graph injection,
+  and chain-of-thought. Measured to cut ~96% of per-turn input overhead
+  (~3,900 → ~164 estimated tokens on this repo). Use it when the engine's own
+  context gathering is enough.
 - Live cost meter and `/undo` checkpoints.
 - Built-in security scanning.
 - Git intelligence: ownership and velocity signals.
@@ -67,7 +75,7 @@ is implemented in this repo (see the module tree below).
 │  OPS LAYER                                                         │
 │  ├─ Telemetry            duration, tokens, cost, quality tracking  │
 │  ├─ Git Intelligence     ownership, velocity, merge risk, commit   │
-│  ├─ Cost Saver           dedup, cache, squeeze (10-30% savings)    │
+│  ├─ Cost Saver           dedup, cache, squeeze (measured: bench/)  │
 │  ├─ Background Jobs      async commands without blocking           │
 │  └─ Diff Explainer       semantic diff → human explanation         │
 │                                                                    │

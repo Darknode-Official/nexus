@@ -833,3 +833,36 @@ describe("Vuln Scanner", () => {
     assert.ok(CHECKS.some(c => c.id === "https"));
   });
 });
+
+// ============================= ENGINEERING BRIEF (NX-101 .. NX-110) =============================
+
+// ---- NX-101: token-overhead accounting ----
+describe("NX-101 Overhead Accounting", () => {
+  const overhead = require("../src/overhead");
+  const cwd = require("path").join(__dirname, "..");
+
+  it("full-path overhead is strictly positive (wrapper is additive)", () => {
+    const r = overhead.composeTurn(cwd, "add a flag to the telemetry command", { intent: "code_edit" });
+    assert.ok(r.overhead > 0, "Nexus must add input over a bare call; measured " + r.overhead);
+    assert.ok(r.finalTokens > r.bareTokens);
+  });
+
+  it("lean path removes the bulk of the overhead", () => {
+    const full = overhead.composeTurn(cwd, "add a flag to the telemetry command", { lean: false });
+    const lean = overhead.composeTurn(cwd, "add a flag to the telemetry command", { lean: true });
+    assert.ok(lean.finalTokens < full.finalTokens, "lean must be cheaper than full");
+    assert.ok(lean.finalTokens < full.finalTokens * 0.25, "lean should cut >75% of full overhead");
+  });
+
+  it("squeeze never increases tokens", () => {
+    const sq = overhead.composeTurn(cwd, "do a thing", { squeeze: true });
+    const no = overhead.composeTurn(cwd, "do a thing", { squeeze: false });
+    assert.ok(sq.finalTokens <= no.finalTokens);
+  });
+
+  it("attributes tokens to subsystems", () => {
+    const r = overhead.composeTurn(cwd, "refactor the auth module", { lean: false });
+    assert.ok(r.breakdown.context >= 0 && r.breakdown.promptTemplate >= 0);
+    assert.equal(r.breakdown.bareTask, r.bareTokens);
+  });
+});
