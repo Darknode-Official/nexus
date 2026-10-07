@@ -89,6 +89,17 @@ is implemented in this repo (see the module tree below).
 └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Terminal interface
+
+Nexus renders to a terminal through one design system in [`src/ui/`](src/ui/):
+a single palette (derived from the darknode-web stylesheet so the terminal, web
+console, and desktop app read as one product), resolved to four color depths
+(truecolor / 256 / 16 / NO_COLOR) and both light and dark backgrounds at WCAG AA.
+The Claude Code–style rounded composer is the anchor. No color value or escape
+sequence lives outside the theme module. See [`docs/UI-DESIGN.md`](docs/UI-DESIGN.md),
+the verified [environment matrix](docs/UI-MATRIX.md), and the committed render
+artifacts in [`docs/ui-evidence/`](docs/ui-evidence/) (`npm run evidence`).
+
 ## Engines
 
 | Engine | Kind | Context | Models |
