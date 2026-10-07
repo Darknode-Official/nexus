@@ -18,6 +18,7 @@ const sessions       = require("./src/sessions");
 const memory         = require("./src/memory");
 const thoughtStream  = require("./src/thought-stream");
 const timeTravel     = require("./src/time-travel");
+const steering       = require("./src/steering");
 
 // Intelligence
 const promptEngine   = require("./src/prompt-engine");
@@ -94,7 +95,7 @@ module.exports = {
   // Core
   intent, reasoning, planner, multiAgent, budget, pipelines, loop,
   // Context & Memory
-  context, knowledgeGraph, deepMemory, sessions, memory, thoughtStream, timeTravel,
+  context, knowledgeGraph, deepMemory, sessions, memory, thoughtStream, timeTravel, steering,
   // Intelligence
   promptEngine, metacognition, workspace, skillForge, worldModel, learner, cowork,
   darknodeAI, securityRAG, learningEngine,

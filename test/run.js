@@ -1222,3 +1222,75 @@ describe("NX-103 Cost Ledger", () => {
     assert.ok(live.projectedTotalCost >= live.costSoFar);
   });
 });
+
+// ---- NX-104: steerability + mutation-class rollback ----
+describe("NX-104 Steering / Interruption", () => {
+  const { createRun, checkpointPolicy, MUTATION_CLASSES } = require("../src/steering");
+
+  it("pause/inspect/resume mid-run without losing the plan", () => {
+    const r = createRun(["gather", "edit", "verify"]);
+    r.start();
+    assert.equal(r.pause().ok, true);
+    const snap = r.inspect();
+    assert.equal(snap.state, "paused");
+    assert.equal(snap.plan.length, 3);
+    assert.equal(r.resume().ok, true);
+    assert.equal(r.state, "running");
+  });
+
+  it("plan is editable: strike, reorder, constrain scope", () => {
+    const r = createRun(["a", "b", "c"]);
+    assert.equal(r.strike(1).ok, true);
+    assert.equal(r.plan.find(s => s.n === 1).status, "struck");
+    assert.equal(r.reorder([2, 0, 1]).ok, true);
+    assert.equal(r.plan[0].n, 2);
+    assert.equal(r.constrainScope(0, "src/ only").ok, true);
+  });
+
+  it("clean kill leaves the tree in a known state (pending => cancelled)", () => {
+    const r = createRun(["a", "b", "c"]);
+    r.start(); r.next(); // step a running
+    const k = r.kill("user abort");
+    assert.equal(k.state, "killed");
+    assert.ok(r.plan.some(s => s.status === "cancelled"), "pending steps cancelled");
+    assert.equal(k.needsRollback, 0, "the in-flight step is flagged for rollback");
+  });
+
+  it("declares rollback coverage for every mutation class", () => {
+    for (const cls of ["file-edit", "codemod", "git", "dependency", "plugin", "mcp"]) {
+      assert.ok(MUTATION_CLASSES[cls], "missing class " + cls);
+      assert.ok(checkpointPolicy(cls).via, "no rollback strategy for " + cls);
+    }
+    assert.equal(checkpointPolicy("plugin").reversible, false, "external side effects are not auto-reversible");
+    assert.equal(checkpointPolicy("plugin").needsConfirm, true);
+    assert.equal(checkpointPolicy("unknown-thing").needsConfirm, true, "unknown => treat as irreversible");
+  });
+});
+
+describe("NX-104 Rollback against a dirty tree (real)", () => {
+  const tt = require("../src/time-travel");
+  const { execSync } = require("child_process");
+  const os = require("os"); const fsx = require("fs"); const pathx = require("path");
+
+  it("undo restores a checkpointed file while preserving unrelated dirty edits", () => {
+    const dir = fsx.mkdtempSync(pathx.join(os.tmpdir(), "nx104-"));
+    const sh = (c) => execSync(c, { cwd: dir, stdio: ["pipe", "pipe", "pipe"] });
+    try {
+      sh("git init -q && git config user.email t@t && git config user.name t");
+      fsx.writeFileSync(pathx.join(dir, "a.txt"), "original A\n");
+      fsx.writeFileSync(pathx.join(dir, "b.txt"), "original B\n");
+      sh("git add -A && git commit -q -m init");
+      // make the tree dirty on b.txt (unrelated to the agent's change)
+      fsx.writeFileSync(pathx.join(dir, "b.txt"), "user's uncommitted edit\n");
+      // agent checkpoints and edits a.txt
+      const cp = tt.createCheckpoint(dir, "edit a", ["a.txt"]);
+      tt.saveCheckpoint(dir, cp);
+      fsx.writeFileSync(pathx.join(dir, "a.txt"), "agent broke this\n");
+      // roll back
+      const res = tt.undo(dir, cp.id);
+      assert.equal(res.ok, true);
+      assert.equal(fsx.readFileSync(pathx.join(dir, "a.txt"), "utf8"), "original A\n", "a.txt restored");
+      assert.equal(fsx.readFileSync(pathx.join(dir, "b.txt"), "utf8"), "user's uncommitted edit\n", "unrelated dirty edit preserved");
+    } finally { try { fsx.rmSync(dir, { recursive: true, force: true }); } catch (_) {} }
+  });
+});
