@@ -1,0 +1,358 @@
+{
+  "generatedAt": "2026-10-07T04:27:16.927Z",
+  "modules": 70,
+  "totalLines": 13236,
+  "testedReferenced": 60,
+  "rows": [
+    {
+      "mod": "mcp-3d-modeler",
+      "loc": 1063,
+      "tested": true
+    },
+    {
+      "mod": "nxp",
+      "loc": 605,
+      "tested": true
+    },
+    {
+      "mod": "prompt-engine",
+      "loc": 453,
+      "tested": true
+    },
+    {
+      "mod": "learning-engine",
+      "loc": 376,
+      "tested": true
+    },
+    {
+      "mod": "darknode-ai",
+      "loc": 361,
+      "tested": true
+    },
+    {
+      "mod": "deep-memory",
+      "loc": 346,
+      "tested": true
+    },
+    {
+      "mod": "mcp-bridge",
+      "loc": 345,
+      "tested": false
+    },
+    {
+      "mod": "pipelines",
+      "loc": 329,
+      "tested": true
+    },
+    {
+      "mod": "metacognition",
+      "loc": 323,
+      "tested": true
+    },
+    {
+      "mod": "skill-forge",
+      "loc": 313,
+      "tested": true
+    },
+    {
+      "mod": "verification",
+      "loc": 312,
+      "tested": true
+    },
+    {
+      "mod": "security-rag",
+      "loc": 296,
+      "tested": true
+    },
+    {
+      "mod": "smart-test",
+      "loc": 286,
+      "tested": false
+    },
+    {
+      "mod": "code-actions",
+      "loc": 274,
+      "tested": false
+    },
+    {
+      "mod": "world-model",
+      "loc": 252,
+      "tested": true
+    },
+    {
+      "mod": "code-radar",
+      "loc": 247,
+      "tested": false
+    },
+    {
+      "mod": "knowledge-graph",
+      "loc": 240,
+      "tested": true
+    },
+    {
+      "mod": "context",
+      "loc": 236,
+      "tested": true
+    },
+    {
+      "mod": "codemod",
+      "loc": 231,
+      "tested": true
+    },
+    {
+      "mod": "learner",
+      "loc": 227,
+      "tested": true
+    },
+    {
+      "mod": "capability",
+      "loc": 226,
+      "tested": true
+    },
+    {
+      "mod": "thought-stream",
+      "loc": 220,
+      "tested": true
+    },
+    {
+      "mod": "multi-agent",
+      "loc": 213,
+      "tested": true
+    },
+    {
+      "mod": "workspace",
+      "loc": 212,
+      "tested": true
+    },
+    {
+      "mod": "time-travel",
+      "loc": 210,
+      "tested": true
+    },
+    {
+      "mod": "ghost-agents",
+      "loc": 203,
+      "tested": true
+    },
+    {
+      "mod": "autocorrect",
+      "loc": 192,
+      "tested": true
+    },
+    {
+      "mod": "pricing",
+      "loc": 189,
+      "tested": true
+    },
+    {
+      "mod": "budget",
+      "loc": 178,
+      "tested": true
+    },
+    {
+      "mod": "plugins",
+      "loc": 175,
+      "tested": true
+    },
+    {
+      "mod": "git-intelligence",
+      "loc": 168,
+      "tested": false
+    },
+    {
+      "mod": "ledger",
+      "loc": 168,
+      "tested": true
+    },
+    {
+      "mod": "sandbox",
+      "loc": 166,
+      "tested": true
+    },
+    {
+      "mod": "sessions",
+      "loc": 165,
+      "tested": true
+    },
+    {
+      "mod": "telemetry",
+      "loc": 161,
+      "tested": true
+    },
+    {
+      "mod": "overhead",
+      "loc": 160,
+      "tested": true
+    },
+    {
+      "mod": "error-recovery",
+      "loc": 157,
+      "tested": true
+    },
+    {
+      "mod": "eval",
+      "loc": 154,
+      "tested": false
+    },
+    {
+      "mod": "planner",
+      "loc": 153,
+      "tested": true
+    },
+    {
+      "mod": "ollama",
+      "loc": 147,
+      "tested": true
+    },
+    {
+      "mod": "ctf-assist",
+      "loc": 143,
+      "tested": true
+    },
+    {
+      "mod": "code-diff-explain",
+      "loc": 142,
+      "tested": false
+    },
+    {
+      "mod": "cowork",
+      "loc": 135,
+      "tested": true
+    },
+    {
+      "mod": "attack-planner",
+      "loc": 130,
+      "tested": true
+    },
+    {
+      "mod": "code-review-auto",
+      "loc": 130,
+      "tested": false
+    },
+    {
+      "mod": "intent",
+      "loc": 129,
+      "tested": true
+    },
+    {
+      "mod": "project-bootstrap",
+      "loc": 120,
+      "tested": false
+    },
+    {
+      "mod": "local-preflight",
+      "loc": 117,
+      "tested": true
+    },
+    {
+      "mod": "reasoning",
+      "loc": 116,
+      "tested": true
+    },
+    {
+      "mod": "report-gen",
+      "loc": 111,
+      "tested": true
+    },
+    {
+      "mod": "steering",
+      "loc": 110,
+      "tested": true
+    },
+    {
+      "mod": "threat-model",
+      "loc": 98,
+      "tested": true
+    },
+    {
+      "mod": "compliance",
+      "loc": 96,
+      "tested": true
+    },
+    {
+      "mod": "vuln-scanner",
+      "loc": 85,
+      "tested": true
+    },
+    {
+      "mod": "envaudit",
+      "loc": 81,
+      "tested": true
+    },
+    {
+      "mod": "deps",
+      "loc": 78,
+      "tested": true
+    },
+    {
+      "mod": "mcp-catalog",
+      "loc": 74,
+      "tested": false
+    },
+    {
+      "mod": "loop-detect",
+      "loc": 73,
+      "tested": true
+    },
+    {
+      "mod": "changelog",
+      "loc": 64,
+      "tested": true
+    },
+    {
+      "mod": "codestats",
+      "loc": 63,
+      "tested": true
+    },
+    {
+      "mod": "todos",
+      "loc": 63,
+      "tested": true
+    },
+    {
+      "mod": "engines",
+      "loc": 59,
+      "tested": true
+    },
+    {
+      "mod": "costsave",
+      "loc": 55,
+      "tested": true
+    },
+    {
+      "mod": "review",
+      "loc": 51,
+      "tested": true
+    },
+    {
+      "mod": "parsers",
+      "loc": 36,
+      "tested": true
+    },
+    {
+      "mod": "config",
+      "loc": 34,
+      "tested": true
+    },
+    {
+      "mod": "tools",
+      "loc": 33,
+      "tested": true
+    },
+    {
+      "mod": "bgjobs",
+      "loc": 28,
+      "tested": true
+    },
+    {
+      "mod": "loop",
+      "loc": 27,
+      "tested": true
+    },
+    {
+      "mod": "memory",
+      "loc": 23,
+      "tested": true
+    }
+  ]
+}

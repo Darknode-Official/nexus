@@ -85,7 +85,7 @@ is implemented in this repo (see the module tree below).
 │  ├─ Project Bootstrap    scaffolds with CI/CD, tests, security     │
 │  └─ 8 AI Engines         Claude · Gemini · Codex · Ollama · more  │
 │                                                                    │
-│  61 modules · 11,860 lines · zero-dependency test suite            │
+│  70 modules · ~13,200 lines · zero-dependency suite (npm run stats)│
 └────────────────────────────────────────────────────────────────────┘
 ```
 

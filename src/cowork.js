@@ -1,11 +1,12 @@
 "use strict";
 // ================= Cowork Engine — intelligent model delegation =================
-// The "hybrid brain" that makes Nexus cost-effective: routes easy tasks to cheap/fast
-// models (local Ollama, Haiku) and hard tasks to powerful models (Claude Opus, GPT-5).
-// Saves 60-80% cost on typical sessions while maintaining quality where it matters.
-//
-// This is what makes Nexus unique — it doesn't just use one model, it orchestrates
-// a team of models with different strengths.
+// Routes easy tasks to cheap/fast models (local Ollama, Haiku) and hard tasks to
+// powerful models (Claude Opus, GPT-5). Any savings claim must come from a
+// measurement (see bench/) rather than a headline number — the realized saving
+// depends on the task mix and on NOT having a strong model re-do cheap output
+// (the ledger flags that erasure, src/ledger.js).
+
+const { priceOf } = require("./pricing");
 
 const DIFFICULTY_SIGNALS = {
   // Low difficulty → delegate to weak/local model
@@ -106,7 +107,10 @@ function routeSubtasks(subtasks, opts) {
  * Calculate cost savings from delegation.
  */
 function costSavings(routes, pricing) {
-  pricing = pricing || { strong: { in: 15, out: 75 }, weak: { in: 0.25, out: 1.25 } }; // per 1M tokens
+  // Default from the single pricing source of truth (pricing.js), not a stale
+  // hardcoded table. The old default used Opus-3 rates ($15/$75) that pricing.js
+  // corrected to $5/$25, overstating every saving ~3x.
+  pricing = pricing || { strong: priceOf("opus"), weak: priceOf("haiku") }; // per 1M tokens
   const avgTokensPerTask = 2000; // rough estimate
 
   let strongCost = 0, actualCost = 0;
