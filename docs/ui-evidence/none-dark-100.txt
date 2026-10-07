@@ -1,0 +1,110 @@
+NEXUS TERMINAL UI — visual evidence
+config: depth=none background=dark width=100 unicode=true
+====================================================================================================
+
+── roles ───────────────────────────────────────────────────────────────────────────────────────────
+
+› you add rate limiting to the API and run the tests
+● nexus I'll add a token-bucket limiter, then run the suite.
+· thinking (ctrl+o to show)
+✓ Read(server.js)  0.2s
+✓ Update(server.js)  0.4s
+✗ Bash(npm test)  3.1s
+  │ FAIL test/api.js
+  │   expected 200, received 500
+  │   at Object.<anonymous> (test/api.js:14:7)
+● nexus Fixed the missing middleware order; tests are green now.
+2 files · 1 cmd · ↑12.4k ↓380 tok · $0.03 · 6.2s · undo #1
+
+── diff ────────────────────────────────────────────────────────────────────────────────────────────
+
+diff --git a/server.js b/server.js
+--- a/server.js
++++ b/server.js
+@@ -1,6 +1,8 @@
+   1    1  const express = require('express');
+   2    2  const app = express();
+        3 +const rateLimit = require('express-rate-limit');
+        4 +app.use(rateLimit({ windowMs: 60000, max: 100 }));
+   3    5  app.use(express.json());
+   4      -app.listen(3000);
+        6 +app.listen(process.env.PORT || 3000);
+   5    7  // end
+
+── markdown ────────────────────────────────────────────────────────────────────────────────────────
+
+# Nexus report
+
+Added a **token-bucket** limiter and `3 tests`. See the spec (https://x.io/spec).
+
+## Changes
+
+· Rate limiting on all `/api` routes
+· Port now reads from the environment
+
+file      │ change │ tests
+─────────-+-──────-+-─────
+server.js │ +4 -1  │ pass 
+config.js │ +2 -0  │ pass 
+
+│  app.use(rateLimit({ windowMs: 60000, max: 100 })); // guard the API
+│  const port = process.env.PORT || 3000;
+
+── plan ────────────────────────────────────────────────────────────────────────────────────────────
+  ✓  1. Read server.js and locate the route table
+→ ◐  2. Add a token-bucket rate limiter to /api
+  ○  3. Run the test suite
+  –  4. Deploy to staging
+
+── agents (3 parallel) ─────────────────────────────────────────────────────────────────────────────
+│ ✓ scout   indexed 142 files, 8 hotspots
+│ ◐ builder editing src/api/limiter.js
+│ ○ tester  queued behind builder
+
+── confirmations ───────────────────────────────────────────────────────────────────────────────────
+
+╭─ i confirm — run `npm test`? ────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│ [1] yes   [2] no                                                                                 │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+╭─ ! DESTRUCTIVE — delete 3 files? ────────────────────────────────────────────────────────────────╮
+│ src/old.js                                                                                       │
+│ src/dead.js                                                                                      │
+│ test/stale.js                                                                                    │
+│                                                                                                  │
+│ [1] yes, proceed   [2] no, cancel                                                                │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+── error ───────────────────────────────────────────────────────────────────────────────────────────
+
+✗ error  [CFG-404]
+  ENOENT: no such file or directory, open 'config.json'
+  while: loading project configuration
+  try:
+    → check the file exists at ./config.json
+    → run `nexus init` to scaffold one
+
+── composer — awaiting ─────────────────────────────────────────────────────────────────────────────
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Ask Nexus, or / for commands                                                                   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+  opus-4-8 · ctx 6% ░░░░░░░░ · ↑12.4k ↓380 tok · $0.03 · auto-accept
+
+── composer — multiline, working ───────────────────────────────────────────────────────────────────
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > explain how this sharding strategy holds up under write-heavy load, and whether consistent     │
+│   hashing would reduce rebalancing                                                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+  ◐ working (esc to interrupt) · opus-4-8 · ctx 72% ▓▓▓▓▓▓░░ · $0.11 · plan
+
+── completion overlay (drawn above the composer) ───────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ → /race   ask several engines, compare answers                                                   │
+│   /review cross-engine second opinion                                                            │
+│   /diff   show pending changes                                                                   │
+│   /commit stage and commit with a message                                                        │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘

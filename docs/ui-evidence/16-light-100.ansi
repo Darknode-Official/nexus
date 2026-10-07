@@ -1,0 +1,110 @@
+NEXUS TERMINAL UI — visual evidence
+config: depth=16 background=light width=100 unicode=true
+====================================================================================================
+
+[90m── [0m[90;1mroles[0m[90m ───────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[35;1m›[0m [35;1myou[0m [30madd rate limiting to the API and run the tests[0m
+[36;1m●[0m [36;1mnexus[0m [30mI'll add a token-bucket limiter, then run the suite.[0m
+[90;1m·[0m [90mthinking (ctrl+o to show)[0m
+[32;1m✓[0m [30;1mRead(server.js)[0m  [90m0.2s[0m
+[32;1m✓[0m [30;1mUpdate(server.js)[0m  [90m0.4s[0m
+[31;1m✗[0m [30;1mBash(npm test)[0m  [90m3.1s[0m
+  [90m│[0m [31mFAIL test/api.js[0m
+  [90m│[0m [31m  expected 200, received 500[0m
+  [90m│[0m [31m  at Object.<anonymous> (test/api.js:14:7)[0m
+[36;1m●[0m [36;1mnexus[0m [30mFixed the missing middleware order; tests are green now.[0m
+[90m2 files [90m·[0m 1 cmd [90m·[0m [90m↑12.4k ↓380 tok[0m [90m·[0m [32m$0.03[0m [90m·[0m 6.2s [90m·[0m undo #1[0m
+
+[90m── [0m[90;1mdiff[0m[90m ────────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[90mdiff --git a/server.js b/server.js[0m
+[36;1m--- a/server.js[0m
+[36;1m+++ b/server.js[0m
+[35;1m@@ -1,6 +1,8 @@[0m
+[90m   1    1 [0m[90m const express = require('express');[0m
+[90m   2    2 [0m[90m const app = express();[0m
+[90m        3 [0m[32;112m+const rateLimit = require('express-rate-limit');[0m
+[90m        4 [0m[32;112m+app.use(rateLimit({ windowMs: 60000, max: 100 }));[0m
+[90m   3    5 [0m[90m app.use(express.json());[0m
+[90m   4      [0m[31;111m-app.listen(3000);[0m
+[90m        6 [0m[32;112m+app.listen(process.env.PORT || 3000);[0m
+[90m   5    7 [0m[90m // end[0m
+
+[90m── [0m[90;1mmarkdown[0m[90m ────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[36;1;4mNexus report[0m
+
+Added a [30;1mtoken-bucket[0m limiter and [32m3 tests[0m. See the [36;4mspec[0m[90m (https://x.io/spec)[0m.
+
+[36;1mChanges[0m
+
+[36m·[0m Rate limiting on all [32m/api[0m routes
+[36m·[0m Port now reads from the environment
+
+[36;1mfile     [0m[90m │ [0m[36;1mchange[0m[90m │ [0m[36;1mtests[0m
+[90m─────────-+-──────-+-─────[0m
+[30mserver.js[0m[90m │ [0m[30m+4 -1 [0m[90m │ [0m[30mpass [0m
+[30mconfig.js[0m[90m │ [0m[30m+2 -0 [0m[90m │ [0m[30mpass [0m
+
+[90m│[0m  app[90m.[0m[35muse[0m[90m([0m[36mrateLimit[0m[90m([0m[90m{[0m windowMs[90m:[0m [33m60000[0m[90m,[0m max[90m:[0m [33m100[0m [90m}[0m[90m)[0m[90m)[0m[90m;[0m [90m// guard the API[0m
+[90m│[0m  [35mconst[0m port [90m=[0m process[90m.[0menv[90m.[0mPORT [90m|[0m[90m|[0m [33m3000[0m[90m;[0m
+
+[90m── [0m[90;1mplan[0m[90m ────────────────────────────────────────────────────────────────────────────────────────────[0m
+  [32;1m✓[0m [90m 1.[0m [90mRead server.js and locate the route table[0m
+[36;1m→ [0m[36;1m◐[0m [90m 2.[0m [30;1mAdd a token-bucket rate limiter to /api[0m
+  [90;1m○[0m [90m 3.[0m [90mRun the test suite[0m
+  [90;1m–[0m [90m 4.[0m [90;9mDeploy to staging[0m
+
+[90m── [0m[90;1magents (3 parallel)[0m[90m ─────────────────────────────────────────────────────────────────────────────[0m
+[90m│[0m [90m✓[0m [90mscout  [0m [90;2mindexed 142 files, 8 hotspots[0m
+[35m│[0m [36;1m◐[0m [35;1mbuilder[0m [30mediting src/api/limiter.js[0m
+[90m│[0m [90m○[0m [90mtester [0m [90;2mqueued behind builder[0m
+
+[90m── [0m[90;1mconfirmations[0m[90m ───────────────────────────────────────────────────────────────────────────────────[0m
+
+[36m╭─[0m[34;1m i confirm — run `npm test`? [0m[36m────────────────────────────────────────────────────────────────────╮[0m
+[36m│[0m                                                                                                  [36m│[0m
+[36m│[0m [36;1m[1] [0myes   [36;1m[2] [0mno                                                                                 [36m│[0m
+[36m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+
+[31m╭─[0m[31;1m ! DESTRUCTIVE — delete 3 files? [0m[31m────────────────────────────────────────────────────────────────╮[0m
+[31m│[0m src/old.js                                                                                       [31m│[0m
+[31m│[0m src/dead.js                                                                                      [31m│[0m
+[31m│[0m test/stale.js                                                                                    [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [36;1m[1] [0myes, proceed   [36;1m[2] [0mno, cancel                                                                [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+
+[90m── [0m[90;1merror[0m[90m ───────────────────────────────────────────────────────────────────────────────────────────[0m
+
+[31;1m✗ error[0m[90m  [CFG-404][0m
+  [30mENOENT: no such file or directory, open 'config.json'[0m
+  [90;1mwhile: [0m[90mloading project configuration[0m
+  [90;1mtry:[0m
+    [36m→[0m [90mcheck the file exists at ./config.json[0m
+    [36m→[0m [90mrun `nexus init` to scaffold one[0m
+
+[90m── [0m[90;1mcomposer — awaiting[0m[90m ─────────────────────────────────────────────────────────────────────────────[0m
+
+[90m╭──────────────────────────────────────────────────────────────────────────────────────────────────╮[0m
+[90m│[0m [35;1m>[0m [90mAsk Nexus, or / for commands[0m                                                                   [90m│[0m
+[90m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+  [36mopus-4-8[0m [90m·[0m [90mctx 6%[0m [90m░░░░░░░░[0m [90m·[0m [90m↑12.4k ↓380 tok[0m [90m·[0m [32m$0.03[0m [90m·[0m [32mauto-accept[0m
+
+[90m── [0m[90;1mcomposer — multiline, working[0m[90m ───────────────────────────────────────────────────────────────────[0m
+
+[36m╭──────────────────────────────────────────────────────────────────────────────────────────────────╮[0m
+[36m│[0m [35;1m>[0m explain how this sharding strategy holds up under write-heavy load, and whether consistent     [36m│[0m
+[36m│[0m   hashing would reduce rebalancing                                                               [36m│[0m
+[36m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+  [36;1m◐ working (esc to interrupt)[0m [90m·[0m [36mopus-4-8[0m [90m·[0m [90mctx 72%[0m [33m▓▓▓▓▓▓░░[0m [90m·[0m [32m$0.11[0m [90m·[0m [32mplan[0m
+
+[90m── [0m[90;1mcompletion overlay (drawn above the composer)[0m[90m ───────────────────────────────────────────────────[0m
+
+[90m┌──────────────────────────────────────────────────────────────────────────────────────────────────┐[0m
+[90m│[0m [36;1m→[0m [36;1m/race  [0m [90mask several engines, compare answers[0m                                                   [90m│[0m
+[90m│[0m   [30m/review[0m [90mcross-engine second opinion[0m                                                            [90m│[0m
+[90m│[0m   [30m/diff  [0m [90mshow pending changes[0m                                                                   [90m│[0m
+[90m│[0m   [30m/commit[0m [90mstage and commit with a message[0m                                                        [90m│[0m
+[90m└──────────────────────────────────────────────────────────────────────────────────────────────────┘[0m
