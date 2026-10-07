@@ -125,7 +125,8 @@ function renderComposer(state, opts = {}, theme) {
   // The frame signals state: accent border + "working" cue vs. quiet awaiting.
   const borderToken = working ? "semantic.accent" : "surface.border";
   const prompt = t.paint(s.prompt, "role.prompt", { bold: true });
-  const inner = Math.max(10, width - 4); // 2 border + 1 pad each side
+  // Overhead per row = 2 borders + 2 pad spaces + 2 marker columns.
+  const inner = Math.max(8, width - 6);
   const maxRows = opts.maxRows || state.maxRows || 10;
 
   // Wrap the buffer to the inner width, preserving word boundaries. An empty

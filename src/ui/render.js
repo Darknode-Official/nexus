@@ -8,7 +8,7 @@
 
 const themeMod = require("./theme");
 const symbolsMod = require("./symbols");
-const { stringWidth, truncate, pad, wrap } = require("./width");
+const { stringWidth, truncate, pad, wrap, stripAnsi } = require("./width");
 const box = require("./box");
 const { highlightLine } = require("./highlight");
 
@@ -217,9 +217,8 @@ function markdown(md, opts = {}, theme) {
       const marker = t.paint(bullet, "semantic.accent");
       const hang = " ".repeat(stringWidth(bullet) + 1);
       const avail = Math.max(8, width - stringWidth(lead) - stringWidth(bullet) - 1);
-      const wrapped = wrap(stripInlineMarks(li[3]), avail);
-      wrapped.forEach((seg, k) => {
-        out.push(lead + (k === 0 ? marker + " " : hang) + inline(t, seg));
+      layoutInline(t, li[3], avail).forEach((seg, k) => {
+        out.push(lead + (k === 0 ? marker + " " : hang) + seg);
       });
       i++; continue;
     }
@@ -229,37 +228,75 @@ function markdown(md, opts = {}, theme) {
     const para = [line]; i++;
     while (i < src.length && src[i].trim() !== "" && !/^(#{1,6}\s|```|>|\s*[-*+]\s|\d+\.\s)/.test(src[i])) { para.push(src[i]); i++; }
     const text = para.join(" ");
-    for (const w of wrap(stripInlineMarks(text), width)) out.push(inlineWrapped(t, w, text));
+    for (const ln of layoutInline(t, text, width)) out.push(ln);
   }
   return out.join("\n");
 }
 
-// Inline span rendering: **bold**, *italic*, `code`, [text](url).
-// When color is disabled (NO_COLOR / --plain / screen-reader) every distinction
-// is preserved with its ASCII marker so the information survives (UI-010).
-function inline(t, str) {
-  let s = String(str);
+// Parse inline markup into typed segments: **bold**, *italic*, `code`,
+// [text](url), and plain runs. (Code/links are atomic; they are not re-split.)
+function parseInline(str) {
+  const s = String(str);
+  const re = /(\*\*[^*]+\*\*)|(\*[^*]+\*)|(`[^`]+`)|(\[[^\]]+\]\([^)]+\))/g;
+  const segs = [];
+  let last = 0, m;
+  while ((m = re.exec(s))) {
+    if (m.index > last) segs.push({ text: s.slice(last, m.index), style: "plain" });
+    if (m[1]) segs.push({ text: m[1].slice(2, -2), style: "bold" });
+    else if (m[2]) segs.push({ text: m[2].slice(1, -1), style: "italic" });
+    else if (m[3]) segs.push({ text: m[3].slice(1, -1), style: "code", atomic: true });
+    else if (m[4]) { const mm = /\[([^\]]+)\]\(([^)]+)\)/.exec(m[4]); segs.push({ text: mm[1], url: mm[2], style: "link", atomic: true }); }
+    last = re.lastIndex;
+  }
+  if (last < s.length) segs.push({ text: s.slice(last), style: "plain" });
+  return segs;
+}
+
+// Paint one segment. When color is disabled every distinction is preserved with
+// its ASCII marker so the information survives (UI-010).
+function paintSeg(t, seg, text) {
   const plain = !t.colorEnabled;
-  // Protect inline code first.
-  const codes = [];
-  s = s.replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return "\u0000" + (codes.length - 1) + "\u0000"; });
-  s = s.replace(/\*\*([^*]+)\*\*/g, (_, b) => plain ? "**" + b + "**" : t.paint(b, "text.primary", { bold: true }));
-  s = s.replace(/(^|[^*])\*([^*]+)\*/g, (_, p, it) => p + (plain ? "*" + it + "*" : t.paint(it, "text.primary", { italic: true })));
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, txt, url) =>
-    plain ? txt + " (" + url + ")" : t.paint(txt, "semantic.accent", { underline: true }) + t.paint(" (" + url + ")", "role.system"));
-  s = s.replace(/\u0000(\d+)\u0000/g, (_, n) => plain ? "`" + codes[+n] + "`" : t.paint(codes[+n], "syntax.string", {}));
-  return s;
+  const body = text != null ? text : seg.text;
+  switch (seg.style) {
+    case "bold":   return plain ? "**" + body + "**" : t.paint(body, "text.primary", { bold: true });
+    case "italic": return plain ? "*" + body + "*" : t.paint(body, "text.primary", { italic: true });
+    case "code":   return plain ? "`" + body + "`" : t.paint(body, "syntax.string");
+    case "link":   return plain ? body + " (" + seg.url + ")" : t.paint(body, "semantic.accent", { underline: true }) + t.paint(" (" + seg.url + ")", "role.system");
+    default:       return body;
+  }
 }
-// Strip marks for width measurement (so wrapping uses visible width).
-function stripInlineMarks(str) {
-  return String(str)
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)");
+
+// Single-line inline render (headings, table cells, blockquotes).
+function inline(t, str) { return parseInline(str).map((seg) => paintSeg(t, seg)).join(""); }
+
+// Word-aware inline layout: paints segments, wraps at word boundaries by VISIBLE
+// width (so markup is never stripped and never bleeds across a wrap). Returns
+// painted lines.
+function layoutInline(t, str, width) {
+  const words = []; // { painted, w, space }
+  for (const seg of parseInline(str)) {
+    if (seg.atomic) {
+      const painted = paintSeg(t, seg);
+      words.push({ painted, w: stringWidth(stripAnsi(painted)), space: false });
+      continue;
+    }
+    for (const part of seg.text.split(/(\s+)/)) {
+      if (part === "") continue;
+      if (/^\s+$/.test(part)) { words.push({ painted: part, w: part.length, space: true }); continue; }
+      const painted = paintSeg(t, seg, part);
+      words.push({ painted, w: stringWidth(part), space: false });
+    }
+  }
+  const lines = [];
+  let cur = "", curW = 0;
+  for (const word of words) {
+    if (word.space) { if (curW > 0 && curW + word.w <= width) { cur += word.painted; curW += word.w; } continue; }
+    if (curW + word.w > width && curW > 0) { lines.push(cur); cur = ""; curW = 0; }
+    cur += word.painted; curW += word.w;
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [""];
 }
-// For a wrapped plain segment, re-apply inline styling best-effort.
-function inlineWrapped(t, segment, _full) { return inline(t, segment); }
 
 function renderCodeBlock(t, code, lang, width) {
   const inner = Math.max(8, width - 4);

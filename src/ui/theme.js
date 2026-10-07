@@ -22,6 +22,15 @@
 const ESC = "\x1b";
 const CSI = ESC + "[";
 
+// The one regex that recognises ANSI/CSI/OSC sequences. Lives here so the ESC
+// character is authored in exactly one module; width.js imports it to measure
+// and strip escapes without re-authoring the literal.
+const ANSI_RE = new RegExp(
+  ESC + "(?:\\[[0-?]*[ -/]*[@-~]|\\][^\\x07" + ESC + "]*(?:\\x07|" + ESC + "\\\\)|[@-Z\\\\-_])",
+  "g"
+);
+function stripAnsi(str) { return String(str).replace(ANSI_RE, ""); }
+
 const control = {
   // Cursor movement / region control for transient redraws (spinners, composer).
   up: (n = 1) => CSI + n + "A",
@@ -442,7 +451,7 @@ let active = makeTheme(autoConfig());
 
 module.exports = {
   // Constants / enums
-  DEPTH, BG, DARK, LIGHT, BORDERS, SPACING, control, SGR,
+  DEPTH, BG, DARK, LIGHT, BORDERS, SPACING, control, SGR, ANSI_RE, stripAnsi,
   // Pure resolvers (testable)
   resolveDepth, resolveBackground, resolveUnicode, resolveMotion, parseOSC11, autoConfig, hexToRgb,
   // Factory + default instance accessors

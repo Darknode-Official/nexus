@@ -60,8 +60,9 @@ function isSkinToneModifier(cp) { return cp >= 0x1f3fb && cp <= 0x1f3ff; }
 function isControl(cp) { return cp === 0 || (cp >= 0x01 && cp <= 0x1f) || (cp >= 0x7f && cp <= 0x9f); }
 
 // Strip SGR / CSI / OSC escape sequences so measurement counts glyphs only.
-const ANSI_RE = /\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-Z\\-_])/g;
-function stripAnsi(str) { return String(str).replace(ANSI_RE, ""); }
+// The ESC character is authored only in theme.js; we import its matcher so this
+// module (and the no-escape-outside-theme invariant) stays clean.
+const { ANSI_RE, stripAnsi } = require("./theme");
 
 // Width of a single code point (0, 1, or 2).
 function codePointWidth(cp) {
