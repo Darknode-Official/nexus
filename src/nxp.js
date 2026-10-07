@@ -552,8 +552,15 @@ function createNXP(cwd, opts) {
   // Logging middleware
   if (opts.logging) {
     registry.use({
-      pre: (name, input) => { console.log(`  [NXP] ${name}(${JSON.stringify(input).slice(0, 100)})`); return input; },
-      onError: (name, error) => { console.error(`  [NXP] ${name} ERROR: ${error.message}`); },
+      pre: (name, input) => {
+        const ui = require("./ui");
+        ui.out(ui.render.toolCall({ name, args: JSON.stringify(input).slice(0, 100), status: "running" }, { indent: 1 }));
+        return input;
+      },
+      onError: (name, error) => {
+        const ui = require("./ui");
+        process.stderr.write(ui.render.roleLine("error", `${name}: ${error.message}`, { indent: 1 }) + "\n");
+      },
     });
   }
 

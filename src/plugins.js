@@ -95,7 +95,10 @@ function createRegistry() {
     let result = data;
     for (const { fn, plugin } of hooks) {
       try { result = (await fn(result)) || result; }
-      catch (e) { console.error(`Plugin ${plugin} hook ${event} error:`, e.message); }
+      catch (e) {
+        const ui = require("./ui");
+        process.stderr.write(ui.render.roleLine("error", `plugin ${plugin} hook ${event}: ${e.message}`) + "\n");
+      }
     }
     return result;
   }
