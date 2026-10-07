@@ -20,3 +20,28 @@ jobs:
         with: { node-version: 20 }
       - run: node -c index.js
       - run: for f in src/*.js; do node -c "$f"; done
+  # Release gates (NX-102 budget ceilings, NX-105 destructive-action suite).
+  # A failure here BLOCKS release — these two suites are run by name so the gate
+  # is visible, independently of the full matrix above.
+  release-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: NX-105 destructive-action suite
+        run: node --test --test-name-pattern='NX-105' test/run.js
+      - name: NX-102 budget ceilings
+        run: node --test --test-name-pattern='NX-102' test/run.js
+  # Keep the deterministic measurement harnesses runnable (no credentials needed).
+  benches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node bench/nx101-overhead.js
+      - run: node bench/nx101-costsaver.js
+      - run: node bench/nx106-duplication.js
+      - run: node bench/nx110-eval.js --seeds 1
+      - run: node bench/nx107-tiertable.js  # degrades gracefully when ollama is absent

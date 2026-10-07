@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T03:59:15.667Z",
+  "generatedAt": "2026-10-07T04:31:19.099Z",
   "claim": "README: Cost Saver = 10-30% savings from dedup, cache, squeeze",
   "bestCase_sameFileInlinedThrice": {
     "before": 1242,
@@ -16,59 +16,73 @@
   "realistic_perTask": [
     {
       "id": "t1",
-      "before": 4005,
-      "after": 4005,
-      "savedTok": 0,
+      "before": 4002,
+      "after": 4001,
+      "savedTok": 1,
       "pct": 0
     },
     {
       "id": "t2",
-      "before": 4023,
-      "after": 4020,
-      "savedTok": 3,
-      "pct": 0.1
-    },
-    {
-      "id": "t3",
       "before": 4020,
       "after": 4020,
       "savedTok": 0,
       "pct": 0
     },
     {
+      "id": "t3",
+      "before": 4021,
+      "after": 4020,
+      "savedTok": 1,
+      "pct": 0
+    },
+    {
       "id": "t4",
-      "before": 4012,
-      "after": 4012,
+      "before": 4014,
+      "after": 4014,
       "savedTok": 0,
       "pct": 0
     },
     {
       "id": "t5",
-      "before": 3777,
-      "after": 3777,
+      "before": 3776,
+      "after": 3774,
+      "savedTok": 2,
+      "pct": 0.1
+    },
+    {
+      "id": "t6",
+      "before": 4019,
+      "after": 4019,
       "savedTok": 0,
       "pct": 0
     },
     {
-      "id": "t6",
-      "before": 3788,
-      "after": 3787,
-      "savedTok": 1,
-      "pct": 0
-    },
-    {
       "id": "t7",
-      "before": 3996,
-      "after": 3996,
+      "before": 3995,
+      "after": 3995,
       "savedTok": 0,
       "pct": 0
     },
     {
       "id": "t8",
-      "before": 4028,
-      "after": 4025,
-      "savedTok": 3,
-      "pct": 0.1
+      "before": 4031,
+      "after": 4030,
+      "savedTok": 1,
+      "pct": 0
+    },
+    {
+      "id": "h1",
+      "before": 4017,
+      "after": 4016,
+      "savedTok": 1,
+      "pct": 0
+    },
+    {
+      "id": "h2",
+      "before": 3998,
+      "after": 3998,
+      "savedTok": 0,
+      "pct": 0
     }
   ],
   "realistic_avgPct": 0,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T04:23:06.073Z",
+  "generatedAt": "2026-10-07T04:31:21.079Z",
   "ollamaReachable": true,
   "recommended": {
     "minHardware": "8 GB RAM for a 7-8B Q4 model at 8K context (CPU ok, slow); measured from model sizes above.",
