@@ -102,6 +102,11 @@ const retrieval      = require("./src/retrieval");
 const refactor       = require("./src/refactor");
 const testintel      = require("./src/testintel");
 
+// Wave-3 subsystems (repo map, edit protocol, shell intelligence)
+const repomap        = require("./src/repomap");
+const editformat     = require("./src/editformat");
+const shellplan      = require("./src/shellplan");
+
 const { version }    = require("./package.json");
 
 module.exports = {
@@ -130,4 +135,6 @@ module.exports = {
   tokensave, codegraph, sectools, perf, patch,
   // Wave-2 subsystems
   lsp, retrieval, refactor, testintel,
+  // Wave-3 subsystems
+  repomap, editformat, shellplan,
 };
