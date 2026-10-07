@@ -74,6 +74,8 @@ const overhead       = require("./src/overhead");
 const gitIntel       = require("./src/git-intelligence");
 
 // Utilities
+const config         = require("./src/config");
+const autocorrect    = require("./src/autocorrect");
 const codestats      = require("./src/codestats");
 const deps           = require("./src/deps");
 const envaudit       = require("./src/envaudit");
@@ -105,5 +107,6 @@ module.exports = {
   // Ops
   telemetry, plugins, bgjobs, pricing, costsave, overhead, gitIntel,
   // Utilities
+  config, autocorrect,
   codestats, deps, envaudit, todos, tools, changelog, parsers, bootstrap,
 };

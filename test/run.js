@@ -1032,3 +1032,77 @@ describe("NX-105 Capability / Destructive-Action Suite", () => {
     assert.equal(log.verify().ok, false, "rewriting history must be detectable");
   });
 });
+
+// ---- /autocorrect: local zero-token prompt normalization ----
+describe("Autocorrect", () => {
+  const ac = require("../src/autocorrect");
+  const cfg = require("../src/config");
+  const os = require("os");
+  const fsx = require("fs");
+  const pathx = require("path");
+
+  it("fixes common typos and preserves case", () => {
+    const r = ac.autocorrect("Teh recieve seperate");
+    assert.equal(r.text, "The receive separate");
+    assert.ok(r.corrections.some(c => c.kind === "typo"));
+  });
+
+  it("tightens verbose filler to save tokens", () => {
+    const r = ac.autocorrect("can you please fix it in order to pass");
+    assert.ok(/^fix it to pass/.test(r.text), "got: " + r.text);
+    assert.ok(r.saved > 0, "verbose prompt should save tokens");
+  });
+
+  it("never touches code fences, inline code, paths, URLs, or flags", () => {
+    const inp = "fix teh bug in `recieve()` at src/teh.js via --recieve and https://x.io/teh";
+    const r = ac.autocorrect(inp);
+    assert.ok(r.text.includes("`recieve()`"), "inline code untouched");
+    assert.ok(r.text.includes("src/teh.js"), "path untouched");
+    assert.ok(r.text.includes("--recieve"), "flag untouched");
+    assert.ok(r.text.includes("https://x.io/teh"), "URL untouched");
+    assert.ok(r.text.startsWith("fix the bug"), "natural-language typo still fixed");
+  });
+
+  it("leaves typos inside a fenced code block alone", () => {
+    const r = ac.autocorrect("```\nteh recieve\n```\nteh text");
+    assert.ok(r.text.includes("```\nteh recieve\n```"), "fenced code preserved verbatim");
+    assert.ok(/the text$/.test(r.text), "text outside the fence corrected");
+  });
+
+  it("leaves a clean prompt unchanged and reports zero saving honestly", () => {
+    const r = ac.autocorrect("refactor the auth module and add tests");
+    assert.equal(r.changed, false);
+    assert.equal(r.saved, 0);
+    assert.match(ac.notice(r), /no changes/);
+  });
+
+  it("is deterministic (same input -> same output)", () => {
+    const a = ac.autocorrect("teh recieve in order to test");
+    const b = ac.autocorrect("teh recieve in order to test");
+    assert.equal(a.text, b.text);
+  });
+
+  it("toggle command persists per project and defaults OFF", () => {
+    const cwd = fsx.mkdtempSync(pathx.join(os.tmpdir(), "nx-ac-"));
+    try {
+      assert.equal(ac.isEnabled(cwd), false, "default is OFF");
+      assert.equal(ac.applyIfEnabled(cwd, "teh bug").applied, false, "no change when off");
+      const on = ac.command(cwd, "on");
+      assert.equal(on.enabled, true);
+      assert.equal(ac.isEnabled(cwd), true);
+      assert.equal(cfg.get(cwd, "autocorrect", false), true, "persisted to config store");
+      const applied = ac.applyIfEnabled(cwd, "teh bug");
+      assert.equal(applied.applied, true);
+      assert.equal(applied.text, "the bug");
+      assert.ok(applied.notice);
+      ac.command(cwd, "off");
+      assert.equal(ac.isEnabled(cwd), false);
+    } finally { try { fsx.rmSync(cwd, { recursive: true, force: true }); } catch (_) {} }
+  });
+
+  it("reports a measurable token delta for NX-103 accounting", () => {
+    const r = ac.autocorrect("can you please fix teh funciton in order to pass");
+    assert.equal(typeof r.tokensBefore, "number");
+    assert.equal(r.saved, r.tokensBefore - r.tokensAfter);
+  });
+});

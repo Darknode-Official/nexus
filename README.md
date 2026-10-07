@@ -112,6 +112,14 @@ darknode nexus agents "add tests" "write docs" "fix lint"
 darknode nexus --engine hybrid "refactor auth module"  # smart delegation
 ```
 
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/loop [rounds]` | Autonomous goal loop with completion tracking |
+| `/undo` | Roll back the last checkpointed mutation |
+| `/autocorrect [on\|off]` | Toggle a local, zero-token prompt cleanup pass (default OFF). When on, before each send Nexus fixes common typos, collapses whitespace, and tightens filler in the natural-language parts of your prompt — never inside code, paths, URLs, quoted strings, or flags. It is rule-based (no LLM call, no tokens spent) and shows a one-line notice with the token delta. Savings are modest on clean prompts and larger on verbose/typo-heavy ones; it reports `0 tokens saved` honestly when it changes nothing. |
+
 ## License
 
 See [LICENSE](LICENSE).
