@@ -1106,3 +1106,72 @@ describe("Autocorrect", () => {
     assert.equal(r.saved, r.tokensBefore - r.tokensAfter);
   });
 });
+
+// ---- NX-108: loop detection + fault classification ----
+describe("NX-108 Loop Detection", () => {
+  const { createLoopGuard } = require("../src/loop-detect");
+
+  it("detects an identical step repeating", () => {
+    const g = createLoopGuard({ maxRepeats: 3 });
+    const step = { action: "edit", target: "a.js", output: "same change" };
+    assert.equal(g.record(step).stop, false);
+    assert.equal(g.record(step).stop, false);
+    const r = g.record(step);
+    assert.equal(r.stop, true);
+    assert.equal(r.pattern, "identical-repeat");
+  });
+
+  it("detects oscillating edits (A,B,A,B)", () => {
+    const g = createLoopGuard({ maxRepeats: 9 });
+    const A = { action: "edit", target: "x.js", output: "ver A" };
+    const B = { action: "edit", target: "x.js", output: "ver B" };
+    g.record(A); g.record(B); g.record(A);
+    const r = g.record(B);
+    assert.equal(r.stop, true);
+    assert.equal(r.pattern, "oscillation");
+  });
+
+  it("detects no progress across a window", () => {
+    const g = createLoopGuard({ noProgressWindow: 3, maxRepeats: 99 });
+    g.record({ action: "run", target: "t", output: "1", progress: false });
+    g.record({ action: "run", target: "t", output: "2", progress: false });
+    const r = g.record({ action: "run", target: "t", output: "3", progress: false });
+    assert.equal(r.stop, true);
+    assert.equal(r.pattern, "no-progress");
+  });
+
+  it("does not false-positive on genuine progress", () => {
+    const g = createLoopGuard();
+    for (let i = 0; i < 6; i++) {
+      const r = g.record({ action: "edit", target: "f" + i + ".js", output: "change " + i, progress: true });
+      assert.equal(r.stop, false);
+    }
+  });
+});
+
+describe("NX-108 Fault Classification", () => {
+  const { classifyError } = require("../src/error-recovery");
+  // Defined behaviour for every fault class the brief names.
+  const faults = {
+    "ECONNREFUSED connecting to engine": "network",
+    "429 Too Many Requests": "rate_limit",
+    "401 Unauthorized: invalid api key": "auth",
+    "Unexpected end of JSON input": "malformed_output",
+    "socket hang up": "network_loss",
+    "ENOSPC: no space left on device": "disk_full",
+    "context length exceeded": "context_overflow",
+    "Cannot find module 'express'": "missing_dep",
+  };
+  for (const [msg, expected] of Object.entries(faults)) {
+    it("classifies: " + expected, () => {
+      const c = classifyError(new Error(msg));
+      assert.equal(c.category, expected, "got " + c.category + " for: " + msg);
+      assert.ok(c.strategies.length > 0, "every fault must have a defined recovery path");
+    });
+  }
+
+  it("separates transient (retry) from systematic (no blind retry)", () => {
+    assert.ok(classifyError(new Error("ETIMEDOUT")).strategies.includes("retry"), "transient retries");
+    assert.ok(!classifyError(new Error("401 unauthorized")).strategies.includes("retry"), "auth is systematic — no blind retry");
+  });
+});

@@ -44,6 +44,13 @@ const ERROR_PATTERNS = [
   { pattern: /Cannot find module|ModuleNotFoundError|ImportError/i, category: "missing_dep", strategy: ["installDep"] },
   { pattern: /SyntaxError|IndentationError|unexpected token/i, category: "syntax", strategy: ["fixCommand"] },
   { pattern: /ENOMEM|out of memory|heap/i, category: "resource", strategy: ["simplify", "askHuman"] },
+  { pattern: /ENOSPC|no space left|disk (?:is )?full/i, category: "disk_full", strategy: ["askHuman"] },
+
+  // Output integrity (NX-108): a truncated or malformed engine response is a
+  // systematic fault to re-request once with a simpler prompt, not to retry blindly.
+  { pattern: /unexpected end of (?:JSON|input)|truncat|malformed|incomplete (?:response|output)|JSON\.parse/i, category: "malformed_output", strategy: ["simplify", "retry"] },
+  // Network loss mid-run (distinct from an initial refused connection).
+  { pattern: /socket hang up|network (?:is )?(?:down|unreachable)|EPIPE|connection (?:lost|closed)/i, category: "network_loss", strategy: ["backoff", "retry"] },
 
   // Git
   { pattern: /merge conflict|CONFLICT/i, category: "merge_conflict", strategy: ["askHuman"] },
