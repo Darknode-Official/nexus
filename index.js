@@ -33,6 +33,7 @@ const learningEngine = require("./src/learning-engine");
 
 // Execution
 const sandbox        = require("./src/sandbox");
+const capability     = require("./src/capability");
 const codemod        = require("./src/codemod");
 const codeActions    = require("./src/code-actions");
 const verification   = require("./src/verification");
@@ -94,7 +95,7 @@ module.exports = {
   promptEngine, metacognition, workspace, skillForge, worldModel, learner, cowork,
   darknodeAI, securityRAG, learningEngine,
   // Execution
-  sandbox, codemod, codeActions, verification, nxp,
+  sandbox, capability, codemod, codeActions, verification, nxp,
   // Quality
   evaluate, review, codeReview, codeRadar, smartTest, diffExplain, ghostAgents,
   // Security

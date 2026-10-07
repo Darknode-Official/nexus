@@ -6,6 +6,7 @@
 
 const { execSync, spawn } = require("child_process");
 const path = require("path");
+const capability = require("./capability");
 
 // ---- Blocked patterns (never execute, regardless of context) ----
 const BLOCKED = [
@@ -143,4 +144,22 @@ function auditSummary() {
   };
 }
 
-module.exports = { validate, execute, logExecution, getAudit, auditSummary, BLOCKED, WARNED };
+// ---- NX-105: capability-backed validation (allowlist, not just denylist) ----
+// Defense in depth: a command must (1) clear the capability allowlist AND
+// destructive-op gate, then (2) still clear the legacy denylist. The capability
+// set carries the declared boundaries; untrusted content can never widen them.
+function validateWithin(command, cap, opts) {
+  const capCheck = capability.commandAllowed(cap, command, opts);
+  if (!capCheck.allowed) {
+    return { allowed: false, blocked: true, warnings: [], reason: capCheck.reason, capability: capCheck };
+  }
+  // Legacy denylist as a second layer.
+  const deny = validate(command);
+  if (!deny.allowed) return Object.assign(deny, { capability: capCheck });
+  return { allowed: true, blocked: false, warnings: deny.warnings, reason: deny.reason, capability: capCheck };
+}
+
+// Judge a file write/read target against the capability roots (symlink/traversal safe).
+function pathWithin(target, cap, cwd) { return capability.containPath(cap, target, cwd); }
+
+module.exports = { validate, validateWithin, pathWithin, execute, logExecution, getAudit, auditSummary, BLOCKED, WARNED };
