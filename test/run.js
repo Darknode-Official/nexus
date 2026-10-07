@@ -1354,3 +1354,38 @@ describe("NX-107 Local Preflight", () => {
     assert.equal(lp.estVramMiBForParams("no-params"), null);
   });
 });
+
+// ---- NX-110: eval harness task set + adapter contract ----
+describe("NX-110 Eval Harness", () => {
+  const tasks = require("../bench/tasks");
+  const nullAdapter = require("../bench/adapters/null-adapter");
+
+  it("every task has a class and a provenance (contamination gate)", () => {
+    for (const t of tasks) {
+      assert.ok(t.class, "task " + t.id + " needs a class");
+      assert.ok(["synthetic", "repo-local"].includes(t.provenance), "task " + t.id + " needs known provenance");
+    }
+  });
+
+  it("reserves a held-out set separate from dev", () => {
+    const held = tasks.filter(t => t.heldOut);
+    const dev = tasks.filter(t => !t.heldOut);
+    assert.ok(held.length >= 1, "must reserve a held-out set");
+    assert.ok(dev.length > held.length);
+    assert.equal(held.every(t => t.provenance === "synthetic"), true, "held-out must be contamination-free");
+  });
+
+  it("covers the required evaluation axes", () => {
+    const classes = new Set(tasks.map(t => t.class));
+    for (const axis of ["feature-existing", "multi-file", "diagnosis", "long-horizon", "dependency-upgrade", "security-capability"]) {
+      assert.ok(classes.has(axis), "missing axis " + axis);
+    }
+  });
+
+  it("null adapter records tokens/latency and reports correctness as null (honest)", async () => {
+    const r = await nullAdapter.run({ task: "add a flag", engine: "claude", seed: 0 });
+    assert.ok(r.tokensIn > 0);
+    assert.equal(r.live, false);
+    assert.equal(await nullAdapter.score(), null, "unscored without a live engine");
+  });
+});

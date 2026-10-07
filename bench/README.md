@@ -67,6 +67,42 @@ no engine credentials. The deterministic harnesses above bound the input side; t
 output side and real billing remain unverified. Do not quote a net-dollar
 "Nexus is cheaper" number until the live harness has been run and committed here.
 
+## NX-110 — evaluation harness
+
+### `node bench/nx110-eval.js [--seeds N] [--engines a,b] [--held-out]`
+
+Runs the task set per engine, per seed, recording cost + latency + tokens
+alongside correctness, reporting variance across seeds (not just the mean), and
+checking which engine wins each class vs what `cowork` routes. A contamination
+gate excludes tasks of unknown provenance. The held-out set (`--held-out`) is
+reserved for a single final run.
+
+Correctness needs a LIVE engine, supplied as an adapter:
+
+```
+NEXUS_EVAL_ADAPTER=./bench/adapters/my-adapter.js node bench/nx110-eval.js
+```
+
+An adapter implements `run({task,engine,seed}) -> {output,tokensIn,tokensOut,
+latencyMs,cost}` and `score(task,output) -> true|false|null`. See
+`bench/adapters/null-adapter.js` for the reference (no-engine) implementation.
+
+**Status: NOT YET RUN against live engines.** This environment has no engine
+credentials, so the committed run uses the null adapter: tokens and latency are
+recorded, correctness is reported as `unscored` (null), and dollars require live
+billing. The harness is runnable by a third party from this file alone. This is
+the baseline NX-101..108 are measured against once an authenticated adapter is
+provided (credentials: an authed `claude`/`gemini`/`codex` CLI, or
+`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`).
+
+## NX-106 — duplication detection
+
+`node bench/nx106-duplication.js` — knowledge-graph recall for existing code.
+
+## NX-107 — local-model tiers
+
+`node bench/nx107-tiertable.js` — tier table from installed-model measurement.
+
 ## Provenance / contamination (NX-110)
 
 `bench/tasks.js` tags each task `synthetic` (written here, never published) or

@@ -25,4 +25,11 @@ module.exports = [
     task: "Add a cache-hit counter to costsave.cacheGet and surface it in cacheStats." },
   { id: "t8", class: "diagnosis", provenance: "synthetic",
     task: "Explain why cowork.costSavings reports a larger saving than pricing.js would — which pricing table is stale." },
+
+  // HELD-OUT set: reserved at the outset, used ONCE at the end. Never used while
+  // iterating on the agent, so results are not overfit. Kept synthetic.
+  { id: "h1", class: "multi-file", provenance: "synthetic", heldOut: true,
+    task: "Thread a request-id through the telemetry event, the ledger step, and the cost summary, and show it in the dashboard." },
+  { id: "h2", class: "long-horizon", provenance: "synthetic", heldOut: true,
+    task: "Add a resumable checkpoint to the loop controller so a crashed run restarts at the last completed round." },
 ];
