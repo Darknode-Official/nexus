@@ -1175,3 +1175,50 @@ describe("NX-108 Fault Classification", () => {
     assert.ok(!classifyError(new Error("401 unauthorized")).strategies.includes("retry"), "auth is systematic — no blind retry");
   });
 });
+
+// ---- NX-103: auditable cost ledger ----
+describe("NX-103 Cost Ledger", () => {
+  const { createLedger } = require("../src/ledger");
+
+  it("reconstructs full cost and attributes every token to a subsystem", () => {
+    const L = createLedger({ plan: ["gather", "edit", "verify"] });
+    L.step({ engine: "claude", model: "opus", tokensIn: 3900, tokensOut: 0, subsystems: { "context-engine": 3700, "prompt-template": 200 } });
+    L.step({ engine: "claude", model: "opus", tokensIn: 100, tokensOut: 500, subsystems: { user: 100, output: 500 } });
+    const r = L.reconstruct();
+    assert.equal(r.totalTokens, 4500);
+    assert.equal(r.attributionComplete, true, "unattributed: " + r.unattributedTokens);
+    assert.equal(r.bySubsystem["context-engine"], 3700);
+    assert.ok(r.totalCost > 0);
+  });
+
+  it("flags silent escalation to a paid path as data-loss severity", () => {
+    const L = createLedger();
+    L.step({ engine: "ollama", model: "qwen", tokensIn: 100, tokensOut: 100 }); // free/local
+    L.step({ engine: "claude", model: "opus", tokensIn: 100, tokensOut: 100, billing: "api" }); // escalation, not user-initiated
+    const esc = L.defects.find(d => d.kind === "silent-escalation");
+    assert.ok(esc, "must flag silent escalation");
+    assert.equal(esc.severity, "data-loss");
+  });
+
+  it("does not flag a user-initiated switch", () => {
+    const L = createLedger();
+    L.step({ engine: "ollama", model: "qwen", tokensIn: 10, tokensOut: 10 });
+    L.step({ engine: "claude", model: "opus", tokensIn: 10, tokensOut: 10, billing: "api", userInitiatedSwitch: true });
+    assert.equal(L.defects.length, 0);
+  });
+
+  it("detects a strong model erasing a cheap model's valid output (savings erased)", () => {
+    const L = createLedger();
+    L.delegation({ task: "format file", from: "haiku", to: "opus", saved: 0.02, rewroteValidOutput: true });
+    const d = L.defects.find(x => x.kind === "savings-erased");
+    assert.ok(d, "must flag savings erasure");
+  });
+
+  it("live snapshot projects total cost from plan position", () => {
+    const L = createLedger({ plan: ["a", "b", "c", "d"] });
+    L.step({ engine: "claude", model: "opus", tokensIn: 1000, tokensOut: 1000, billing: "api" });
+    const live = L.live({ why: "editing auth" });
+    assert.equal(live.planPosition, "1/4");
+    assert.ok(live.projectedTotalCost >= live.costSoFar);
+  });
+});

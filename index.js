@@ -67,6 +67,7 @@ const loopDetect     = require("./src/loop-detect");
 
 // Ops
 const telemetry      = require("./src/telemetry");
+const ledger         = require("./src/ledger");
 const plugins        = require("./src/plugins");
 const bgjobs         = require("./src/bgjobs");
 const pricing        = require("./src/pricing");
@@ -106,7 +107,7 @@ module.exports = {
   // Infrastructure
   engines, ollama, mcpBridge, mcpCatalog, modeler3d, errorRecovery, loopDetect,
   // Ops
-  telemetry, plugins, bgjobs, pricing, costsave, overhead, gitIntel,
+  telemetry, ledger, plugins, bgjobs, pricing, costsave, overhead, gitIntel,
   // Utilities
   config, autocorrect,
   codestats, deps, envaudit, todos, tools, changelog, parsers, bootstrap,
