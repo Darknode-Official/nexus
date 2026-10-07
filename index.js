@@ -96,6 +96,12 @@ const sectools       = require("./src/sectools");
 const perf           = require("./src/perf");
 const patch          = require("./src/patch");
 
+// Wave-2 subsystems (semantic intelligence, retrieval, refactoring, test intelligence)
+const lsp            = require("./src/lsp");
+const retrieval      = require("./src/retrieval");
+const refactor       = require("./src/refactor");
+const testintel      = require("./src/testintel");
+
 const { version }    = require("./package.json");
 
 module.exports = {
@@ -122,4 +128,6 @@ module.exports = {
   codestats, deps, envaudit, todos, tools, changelog, parsers, bootstrap,
   // Expansion subsystems
   tokensave, codegraph, sectools, perf, patch,
+  // Wave-2 subsystems
+  lsp, retrieval, refactor, testintel,
 };
