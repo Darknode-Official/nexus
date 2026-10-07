@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-10-07T04:21:07.287Z",
+  "graph": {
+    "entities": 845,
+    "relations": 1396,
+    "byType": {
+      "file": 73,
+      "function": 762,
+      "class": 8,
+      "test": 2
+    },
+    "files": 73,
+    "functions": 762,
+    "classes": 8,
+    "tests": 2,
+    "builtAt": 1791346867287
+  },
+  "exactName": {
+    "total": 5,
+    "found": 5,
+    "rank1": 5,
+    "recall": 1,
+    "rank1Rate": 1,
+    "rows": [
+      {
+        "query": "squeezeContext",
+        "expect": "src/costsave.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/costsave.js"
+        ]
+      },
+      {
+        "query": "classifyError",
+        "expect": "src/error-recovery.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/error-recovery.js"
+        ]
+      },
+      {
+        "query": "createBudget",
+        "expect": "src/budget.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/budget.js"
+        ]
+      },
+      {
+        "query": "assemblePrompt",
+        "expect": "src/prompt-engine.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/prompt-engine.js"
+        ]
+      },
+      {
+        "query": "estimateDifficulty",
+        "expect": "src/cowork.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/cowork.js"
+        ]
+      }
+    ]
+  },
+  "descriptive": {
+    "total": 5,
+    "found": 4,
+    "rank1": 2,
+    "recall": 0.8,
+    "rank1Rate": 0.4,
+    "rows": [
+      {
+        "query": "add a function to dedupe context blocks and collap",
+        "expect": "src/costsave.js",
+        "found": false,
+        "rank": null,
+        "top": [
+          "src/context.js",
+          "src/sandbox.js",
+          "src/mcp-3d-modeler.js"
+        ]
+      },
+      {
+        "query": "classify an error into a category for retry",
+        "expect": "src/error-recovery.js",
+        "found": true,
+        "rank": 2,
+        "top": [
+          "src/skill-forge.js",
+          "src/error-recovery.js",
+          "src/learning-engine.js"
+        ]
+      },
+      {
+        "query": "estimate how difficult a task is for model routing",
+        "expect": "src/cowork.js",
+        "found": true,
+        "rank": 5,
+        "top": [
+          "src/mcp-3d-modeler.js",
+          "src/skill-forge.js",
+          "src/world-model.js"
+        ]
+      },
+      {
+        "query": "build an optimized prompt with chain of thought",
+        "expect": "src/prompt-engine.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/prompt-engine.js",
+          "src/thought-stream.js",
+          "src/learning-engine.js"
+        ]
+      },
+      {
+        "query": "detect when the agent is stuck in a loop",
+        "expect": "src/loop-detect.js",
+        "found": true,
+        "rank": 1,
+        "top": [
+          "src/loop-detect.js",
+          "src/multi-agent.js",
+          "src/workspace.js"
+        ]
+      }
+    ]
+  },
+  "verdict": "Exact-name lookup is reliable, but DESCRIPTIVE recall (the duplication-avoidance case) is lower and the correct file often does not rank first. queryFiles is a keyword scorer over entity names, so a task phrased without the function's name (e.g. 'collapse whitespace' vs squeezeContext) can be missed. Reuse guidance should query the KG AND fall back to content search; relying on the KG alone will let some duplication through."
+}

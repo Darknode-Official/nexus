@@ -1294,3 +1294,21 @@ describe("NX-104 Rollback against a dirty tree (real)", () => {
     } finally { try { fsx.rmSync(dir, { recursive: true, force: true }); } catch (_) {} }
   });
 });
+
+// ---- NX-106: knowledge-graph duplication-detection recall ----
+describe("NX-106 Duplication Detection (KG recall)", () => {
+  const kg = require("../src/knowledge-graph");
+  const g = kg.buildGraph(require("path").join(__dirname, ".."));
+
+  it("finds an existing implementation by exact function name", () => {
+    const top = kg.queryFiles(g, "squeezeContext").slice(0, 3).map(r => r.file);
+    assert.ok(top.includes("src/costsave.js"));
+  });
+
+  it("documents the descriptive-query gap (reuse must not rely on KG alone)", () => {
+    // The duplication-avoidance case: a task phrased WITHOUT the function name.
+    // This is a MEASURED LIMITATION, asserted so a regression (or a fix) is visible.
+    const top = kg.queryFiles(g, "dedupe context blocks and collapse whitespace").slice(0, 5).map(r => r.file);
+    assert.ok(!top.includes("src/costsave.js"), "KG keyword scorer misses this; reuse must fall back to content search");
+  });
+});
