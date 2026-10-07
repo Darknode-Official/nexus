@@ -35,11 +35,18 @@ function createAgent(role, prompt) {
 async function fanOut(tasks, runFn, opts) {
   opts = opts || {};
   const maxConcurrent = opts.maxConcurrent || 5;
+  const budget = opts.budget || null; // NX-102: opt-in hard ceiling enforced here
   const agents = tasks.map(t => createAgent(t.role || "worker", t.prompt));
   const results = [];
+  let stoppedBy = null;
 
   // Run in batches of maxConcurrent
   for (let i = 0; i < agents.length; i += maxConcurrent) {
+    // NX-102: stop the WHOLE run before a batch if the budget is spent.
+    if (budget) {
+      const gate = budget.canProceed(opts.estTokensPerAgent || 0, opts.estUSDPerAgent || 0);
+      if (gate.stop) { stoppedBy = gate.reason; for (const a of agents) if (a.status === "pending") a.status = "skipped"; break; }
+    }
     const batch = agents.slice(i, i + maxConcurrent);
     const batchResults = await Promise.allSettled(
       batch.map(async (agent) => {
@@ -59,8 +66,13 @@ async function fanOut(tasks, runFn, opts) {
       })
     );
     results.push(...batchResults.map(r => r.value || r.reason));
+    // NX-102: charge the budget with what the batch actually spent.
+    if (budget) {
+      for (const a of batch) budget.charge({ tokens: a.tokens.in + a.tokens.out, label: a.role });
+      if (budget.stopped) { stoppedBy = budget.stopReason; for (const a of agents) if (a.status === "pending") a.status = "skipped"; break; }
+    }
   }
-  return { agents, pattern: "fan-out", totalTokens: agents.reduce((s, a) => s + a.tokens.in + a.tokens.out, 0) };
+  return { agents, pattern: "fan-out", totalTokens: agents.reduce((s, a) => s + a.tokens.in + a.tokens.out, 0), stoppedBy };
 }
 
 // ---- Debate: agents propose, judge selects ----
@@ -112,11 +124,19 @@ async function debate(question, agentCount, runFn, judgeFn, opts) {
 
 // ---- Pipeline: sequential chain ----
 
-async function pipeline(stages, runFn) {
+async function pipeline(stages, runFn, opts) {
+  opts = opts || {};
+  const budget = opts.budget || null; // NX-102: opt-in hard ceiling
   const agents = stages.map(s => createAgent(s.role || "stage", s.prompt));
   let prevOutput = null;
+  let stoppedBy = null;
 
   for (const agent of agents) {
+    // NX-102: stop before a stage if the budget is spent.
+    if (budget) {
+      const gate = budget.canProceed(opts.estTokensPerStage || 0, opts.estUSDPerStage || 0);
+      if (gate.stop) { stoppedBy = gate.reason; agent.status = "skipped"; break; }
+    }
     const prompt = prevOutput
       ? agent.prompt + "\n\n## Input from previous stage:\n" + (typeof prevOutput === "string" ? prevOutput : JSON.stringify(prevOutput))
       : agent.prompt;
@@ -135,9 +155,14 @@ async function pipeline(stages, runFn) {
       break; // pipeline stops on failure
     }
     agent.finishedAt = Date.now();
+    // NX-102: charge after the stage; stop the chain if the ceiling is reached.
+    if (budget) {
+      budget.charge({ tokens: agent.tokens.in + agent.tokens.out, label: agent.role });
+      if (budget.stopped) { stoppedBy = budget.stopReason; break; }
+    }
   }
 
-  return { agents, pattern: "pipeline", finalOutput: prevOutput, totalTokens: agents.reduce((s, a) => s + a.tokens.in + a.tokens.out, 0) };
+  return { agents, pattern: "pipeline", finalOutput: prevOutput, totalTokens: agents.reduce((s, a) => s + a.tokens.in + a.tokens.out, 0), stoppedBy };
 }
 
 // ---- Review loop: writer + reviewer iterate ----

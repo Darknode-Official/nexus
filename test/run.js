@@ -866,3 +866,65 @@ describe("NX-101 Overhead Accounting", () => {
     assert.equal(r.breakdown.bareTask, r.bareTokens);
   });
 });
+
+// ---- NX-102: budget ceilings enforced by the executor ----
+describe("NX-102 Budget Enforcer", () => {
+  const { createBudget, predictRange, retryDecision, fanOutAllowed } = require("../src/budget");
+  const { fanOut, pipeline } = require("../src/multi-agent");
+
+  it("stops before a step that would cross a token ceiling", () => {
+    const b = createBudget({ maxTokens: 1000, maxSteps: 100 });
+    b.charge({ tokens: 900 });
+    const gate = b.canProceed(200); // 900+200 > 1000
+    assert.equal(gate.ok, false);
+    assert.equal(gate.stop, true);
+    assert.ok(/token/.test(gate.reason));
+  });
+
+  it("stops at a step ceiling", () => {
+    const b = createBudget({ maxSteps: 2, maxTokens: 1e9 });
+    b.charge({ tokens: 1 }); b.charge({ tokens: 1 }); // 2 of 2 used — at limit
+    assert.equal(b.stopped, false, "exactly at the limit is allowed");
+    b.charge({ tokens: 1 }); // 3rd step exceeds
+    assert.equal(b.stopped, true);
+  });
+
+  it("enforces the ceiling inside fanOut (executor, not convention)", async () => {
+    const b = createBudget({ maxTokens: 150, maxSteps: 100 });
+    const tasks = [1,2,3,4,5].map(n => ({ role: "w" + n, prompt: "t" + n }));
+    const run = async () => ({ result: "ok", tokens: { in: 80, out: 20 } }); // 100 tok each
+    const res = await fanOut(tasks, run, { budget: b, maxConcurrent: 1 });
+    assert.ok(res.stoppedBy, "run must report why it stopped");
+    assert.ok(res.agents.some(a => a.status === "skipped"), "some agents must be skipped, not run at any cost");
+    assert.ok(b.spent.tokens <= b.limits.maxTokens + 100, "did not blow far past ceiling");
+  });
+
+  it("per-project parent budget also caps a child run", () => {
+    const project = createBudget({ maxTokens: 100 });
+    const run = createBudget({ maxTokens: 1e9 }, project);
+    run.charge({ tokens: 100 });
+    const gate = run.canProceed(50);
+    assert.equal(gate.stop, true);
+    assert.equal(gate.scope, "project");
+  });
+
+  it("predicts a confirmable cost range before a run", () => {
+    const r = predictRange({ steps: 10, avgInTokens: 3000, avgOutTokens: 500, model: "opus" });
+    assert.ok(r.usd.expected > 0);
+    assert.ok(r.usd.low < r.usd.expected && r.usd.expected < r.usd.high);
+    assert.equal(r.tokens.expected, 35000);
+  });
+
+  it("bounds retries and flags an uneconomic retry as a loss", () => {
+    assert.equal(retryDecision({ quality: 0.9, threshold: 0.7 }).retry, false);
+    assert.equal(retryDecision({ attempt: 2, maxAttempts: 2, quality: 0.1 }).retry, false);
+    const d = retryDecision({ attempt: 1, maxAttempts: 3, quality: 0.1, threshold: 0.7, firstAttemptCost: 1, retryCost: 5 });
+    assert.equal(d.retry, true);
+    assert.ok(d.economicWarning, "a costlier retry must be flagged as a potential loss");
+  });
+
+  it("fan-out is opt-in, never the default", () => {
+    assert.equal(fanOutAllowed({}).allowed, false);
+    assert.equal(fanOutAllowed({ fanOut: true }).allowed, true);
+  });
+});

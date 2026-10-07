@@ -4,9 +4,11 @@
 // to keep going. The agent signals completion by ending a reply with GOAL-DONE.
 const DONE_TOKEN = "GOAL-DONE";
 
-function loopDecision(round, maxRounds, output) {
+function loopDecision(round, maxRounds, output, budget) {
   if (typeof output === "string" && output.trim().toUpperCase().endsWith(DONE_TOKEN)) return { stop: true, reason: "goal complete" };
   if (round >= maxRounds) return { stop: true, reason: "reached the " + maxRounds + "-round limit" };
+  // NX-102: an optional budget stops the loop before it finishes "at any cost".
+  if (budget && budget.stopped) return { stop: true, reason: "budget: " + budget.stopReason };
   return { stop: false, reason: "continue" };
 }
 

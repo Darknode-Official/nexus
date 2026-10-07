@@ -6,6 +6,7 @@ const intent         = require("./src/intent");
 const reasoning      = require("./src/reasoning");
 const planner        = require("./src/planner");
 const multiAgent     = require("./src/multi-agent");
+const budget         = require("./src/budget");
 const pipelines      = require("./src/pipelines");
 const loop           = require("./src/loop");
 
@@ -86,7 +87,7 @@ const { version }    = require("./package.json");
 module.exports = {
   version,
   // Core
-  intent, reasoning, planner, multiAgent, pipelines, loop,
+  intent, reasoning, planner, multiAgent, budget, pipelines, loop,
   // Context & Memory
   context, knowledgeGraph, deepMemory, sessions, memory, thoughtStream, timeTravel,
   // Intelligence
